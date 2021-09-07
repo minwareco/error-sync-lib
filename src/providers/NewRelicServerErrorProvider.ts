@@ -3,6 +3,7 @@ import { ErrorProviderInterface } from "../interfaces";
 
 export type NewRelicServerErrorProviderConfig = {
   appName: string,
+  appConfigId: string,
   includeHosts?: [string],
   excludedeHosts?: [string],
   excludeUserAgents?: [string],
@@ -19,8 +20,6 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
   }
 
   public async getErrors(hoursBack: number = 24, limit: number = 1000): Promise<Error[]> {
-    // TODO: get application ID
-    const configId = 'NewRelicApi';
     const nrql = `
       SELECT count(*), uniqueCount(COL_userId), max(appId)
       FROM TransactionError
@@ -32,7 +31,7 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
     `;
 
     return new Promise((resolve, reject) => {
-      this.newrelicApi.insights.query(nrql, configId, (error, response, body) => {
+      this.newrelicApi.insights.query(nrql, this.config.appConfigId, (error, response, body) => {
         if (error) {
           return reject(error);
         } else if (response.statusCode != 200) {
