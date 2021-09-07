@@ -2,10 +2,24 @@ import { CacheName } from '../models';
 import { CacheProviderInterface } from '../interfaces';
 const AWS = require('aws-sdk');
 
-AWS.config.update({region: 'us-east-1'});
+export type S3CacheProviderConfig = {
+  region?: string,
+  bucket: string,
+  keyPrefix: string,
+};
 
 export class S3CacheProvider implements CacheProviderInterface {
+  private config: S3CacheProviderConfig;
   private caches: object = {};
+
+  public constructor(config: S3CacheProviderConfig) {
+    this.config = config;
+
+    if (this.config.region) {
+      AWS.config.update({ region: this.config.region });
+    }
+  }
+
 
   public async getObject<T>(id: string, cacheName: CacheName): Promise<T> {
     const cache = await this.getCache(cacheName);
@@ -31,8 +45,8 @@ export class S3CacheProvider implements CacheProviderInterface {
     if (!this.caches.hasOwnProperty(name)) {
       const s3 = new AWS.S3();
       const params = {
-        Bucket: 'prod-errorsync-redpointops',
-        Key: `cache/${name}.json`,
+        Bucket: this.config.bucket,
+        Key: `${this.config.keyPrefix}${name}.json`,
       };
 
       this.caches[name] = await new Promise((resolve, reject) => {
@@ -53,8 +67,8 @@ export class S3CacheProvider implements CacheProviderInterface {
     console.log('Saving', data);
     const s3 = new AWS.S3();
     const params = {
-      Bucket: 'prod-errorsync-redpointops',
-      Key: `cache/${name}.json`,
+      Bucket: this.config.bucket,
+      Key: `${this.config.keyPrefix}${name}.json`,
       Body: JSON.stringify(data),
       ContentType: 'application/json; charset=utf-8',
     };
