@@ -1,3 +1,4 @@
+export * from './ErrorCountPrioritizationProvider';
 export * from './JiraTicketProvider';
 export * from './NewRelicServerErrorProvider';
 export * from './OpsGenieAlertProvider';

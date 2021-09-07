@@ -29,6 +29,7 @@ export type Error = {
 
 export type ErrorGroup = {
   name: string,
+  sourceName: string,
   type: ErrorType,
   priority: string,
   clientId: string,
