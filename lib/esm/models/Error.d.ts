@@ -24,6 +24,7 @@ export declare type Error = {
 };
 export declare type ErrorGroup = {
     name: string;
+    sourceName: string;
     type: ErrorType;
     priority: string;
     clientId: string;

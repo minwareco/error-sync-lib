@@ -2,6 +2,7 @@ import { Error } from '../models';
 import { ErrorProviderInterface } from "../interfaces";
 export declare type NewRelicServerErrorProviderConfig = {
     appName: string;
+    appConfigId: string;
     includeHosts?: [string];
     excludedeHosts?: [string];
     excludeUserAgents?: [string];
