@@ -34,7 +34,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
   private jiraClient;
 
   public constructor(config: JiraTicketProviderConfig) {
-    this.config = config;
+    this.config = JSON.parse(JSON.stringify(config));
 
     // use default priority mappings if they are not provided
     if (!this.config.ticket.priorityMap) {

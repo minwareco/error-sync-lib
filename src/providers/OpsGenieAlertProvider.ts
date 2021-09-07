@@ -12,7 +12,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
   private config: OpsGenieAlertProviderConfig;
 
   constructor(config: OpsGenieAlertProviderConfig) {
-    this.config = config;
+    this.config = JSON.parse(JSON.stringify(config));
 
     opsgenie.configure({
       api_key: this.config.apiKey,
