@@ -17,7 +17,9 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v2
 
-      # Run CI commands
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Lint + Unit Test + Build
         run: |
           cat <<EOT >> commands.txt
