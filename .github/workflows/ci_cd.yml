@@ -1,0 +1,27 @@
+name: CI/CD
+
+on:
+  # Triggers the workflow on push to main and for pull requests
+  push:
+    branches: [ main ]
+  pull_request:
+
+env:
+  PROJECT_NAME: error-sync-lib
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      # Run CI commands
+      - name: Lint + Unit Test
+        run: |
+          cat <<EOT >> commands.txt
+          yarn lint
+          yarn test
+          EOT
+          parallel --halt now,fail=1 < commands.txt
