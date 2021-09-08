@@ -18,10 +18,11 @@ jobs:
         uses: actions/checkout@v2
 
       # Run CI commands
-      - name: Lint + Unit Test
+      - name: Lint + Unit Test + Build
         run: |
           cat <<EOT >> commands.txt
           yarn lint
+          yarn build
           yarn test
           EOT
           parallel --halt now,fail=1 < commands.txt
