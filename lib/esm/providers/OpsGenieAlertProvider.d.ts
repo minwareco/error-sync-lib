@@ -3,7 +3,7 @@ import { AlertProviderInterface } from '../interfaces';
 export declare type OpsGenieAlertProviderConfig = {
     host: string;
     apiKey: string;
-    priorityMap?: object;
+    priorityMap?: Record<string, string>;
 };
 export declare class OpsGenieAlertProvider implements AlertProviderInterface {
     private config;

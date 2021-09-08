@@ -15,7 +15,7 @@ export declare type JiraTicketConfig = {
     issueTypeId: string;
     openTransitionId: string;
     componentIds?: string[];
-    priorityMap?: object;
+    priorityMap?: Record<string, string>;
 };
 export declare type JiraTicketProviderConfig = {
     host: string;

@@ -1,5 +1,6 @@
 import { CacheName } from '../models';
 import { CacheProviderInterface } from '../interfaces';
+import AWS from 'aws-sdk';
 
 export type S3CacheProviderConfig = {
   region?: string,
@@ -9,15 +10,13 @@ export type S3CacheProviderConfig = {
 
 export class S3CacheProvider implements CacheProviderInterface {
   private config: S3CacheProviderConfig;
-  private caches: object = {};
-  private aws;
+  private caches: Record<string, any> = {};
 
   public constructor(config: S3CacheProviderConfig) {
     this.config = config;
-    this.aws = require('aws-sdk');
 
     if (this.config.region) {
-      this.aws.config.update({ region: this.config.region });
+      AWS.config.update({ region: this.config.region });
     }
   }
 
@@ -41,9 +40,9 @@ export class S3CacheProvider implements CacheProviderInterface {
     }
   }
 
-  private async getCache(name: CacheName): Promise<object> {
-    if (!this.caches.hasOwnProperty(name)) {
-      const s3 = new this.aws.S3();
+  private async getCache(name: CacheName): Promise<Record<any, any>> {
+    if (!Object.prototype.hasOwnProperty.call(this.caches, name)) {
+      const s3 = new AWS.S3();
       const params = {
         Bucket: this.config.bucket,
         Key: `${this.config.keyPrefix}${name}.json`,
@@ -63,9 +62,9 @@ export class S3CacheProvider implements CacheProviderInterface {
     return this.caches[name];
   }
 
-  private async setCache(name: CacheName, data: object): Promise<void> {
+  private async setCache(name: CacheName, data: Record<any, any>): Promise<void> {
     console.log('Saving', data);
-    const s3 = new this.aws.S3();
+    const s3 = new AWS.S3();
     const params = {
       Bucket: this.config.bucket,
       Key: `${this.config.keyPrefix}${name}.json`,

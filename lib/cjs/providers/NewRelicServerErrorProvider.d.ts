@@ -1,5 +1,5 @@
 import { Error } from '../models';
-import { ErrorProviderInterface } from "../interfaces";
+import { ErrorProviderInterface } from '../interfaces';
 export declare type NewRelicServerErrorProviderConfig = {
     appName: string;
     appConfigId: string;

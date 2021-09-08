@@ -1,11 +1,11 @@
 import { Alert, AlertContent, ErrorGroup, ErrorPriority } from '../models';
 import { AlertProviderInterface } from '../interfaces';
-const opsgenie = require('opsgenie-sdk');
+import opsGenie from 'opsgenie-sdk';
 
 export type OpsGenieAlertProviderConfig = {
   host: string,
   apiKey: string,
-  priorityMap?: object,
+  priorityMap?: Record<string, string>,
 }
 
 export class OpsGenieAlertProvider implements AlertProviderInterface {
@@ -14,7 +14,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
   constructor(config: OpsGenieAlertProviderConfig) {
     this.config = JSON.parse(JSON.stringify(config));
 
-    opsgenie.configure({
+    opsGenie.configure({
       api_key: this.config.apiKey,
     });
 
@@ -32,7 +32,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
 
   public async findAlert(clientId: string): Promise<Alert> {
     const opsgenieAlert: any = await new Promise((resolve, reject) => {
-      opsgenie.alertV2.get({
+      opsGenie.alertV2.get({
         identifier: clientId,
         identifierType: 'alias',
       }, (error, response) => {
@@ -55,7 +55,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
     const priority = this.config.priorityMap[alertContent.priority];
 
     await new Promise((resolve, reject) => {
-      opsgenie.alertV2.create({
+      opsGenie.alertV2.create({
         message: alertContent.summary,
         description: alertContent.description,
         alias: alertContent.clientId,
@@ -76,7 +76,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
   public async updateAlert(alert: Alert): Promise<Alert> {
     // an OpsGenie alert cannot be updated, so we just recreate it
     await new Promise((resolve, reject) => {
-      opsgenie.alertV2.close({
+      opsGenie.alertV2.close({
         identifier: alert.clientId,
         identifierType: 'alias',
       }, (error, response) => {

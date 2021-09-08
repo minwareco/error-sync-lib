@@ -8,7 +8,6 @@ export declare type S3CacheProviderConfig = {
 export declare class S3CacheProvider implements CacheProviderInterface {
     private config;
     private caches;
-    private aws;
     constructor(config: S3CacheProviderConfig);
     getObject<T>(id: string, cacheName: CacheName): Promise<T>;
     setObject<T>(id: string, value: T, cacheName: CacheName, saveCache?: boolean): Promise<void>;

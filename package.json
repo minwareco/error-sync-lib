@@ -1,11 +1,13 @@
 {
   "name": "error-sync-lib",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": "true",
   "scripts": {
     "build": "yarn build:esm && yarn build:cjs",
     "build:esm": "rm -rf ./lib/esm && tsc",
-    "build:cjs": "rm -rf ./lib/cjs && tsc --module commonjs --outDir lib/cjs"
+    "build:cjs": "rm -rf ./lib/cjs && tsc --module commonjs --outDir lib/cjs",
+    "lint": "eslint src --ext .ts",
+    "test": "jest --passWithNoTests src"
   },
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -18,6 +20,10 @@
     "typescript": "^4.4.2"
   },
   "devDependencies": {
-    "@types/node": "^16.7.10"
+    "@types/node": "^16.7.10",
+    "@typescript-eslint/eslint-plugin": "^4.31.0",
+    "@typescript-eslint/parser": "^4.31.0",
+    "eslint": "^7.32.0",
+    "jest": "^27.1.0"
   }
 }

@@ -1,5 +1,6 @@
 import { Error, ErrorCountType, ErrorType } from '../models';
-import { ErrorProviderInterface } from "../interfaces";
+import { ErrorProviderInterface } from '../interfaces';
+import newrelicApi from 'newrelic-api-client';
 
 export type NewRelicServerErrorProviderConfig = {
   appName: string,
@@ -16,22 +17,21 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
 
   public constructor(config: NewRelicServerErrorProviderConfig) {
     this.config = config;
-    this.newrelicApi = require('newrelic-api-client');
   }
 
-  public async getErrors(hoursBack: number = 24, limit: number = 1000): Promise<Error[]> {
+  public async getErrors(hoursBack= 24, limit = 1000): Promise<Error[]> {
     const nrql = `
       SELECT count(*), uniqueCount(COL_userId), max(appId)
       FROM TransactionError
       WHERE \`request.headers.host\` LIKE '%'
       AND \`request.headers.User-Agent\` NOT LIKE '%Bot%'
       FACET \`error.message\`
-      SINCE 1 day ago
-      LIMIT 1000
+      SINCE ${hoursBack} hours ago
+      LIMIT ${limit}
     `;
 
     return new Promise((resolve, reject) => {
-      this.newrelicApi.insights.query(nrql, this.config.appConfigId, (error, response, body) => {
+      newrelicApi.insights.query(nrql, this.config.appConfigId, (error, response, body) => {
         if (error) {
           return reject(error);
         } else if (response.statusCode != 200) {
@@ -47,7 +47,7 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
         body.facets.forEach((newRelicError) => {
           newRelicError.results.forEach((row) => {
             // convert each row into a property to produce a cleaner object that is easier to use
-            for (let prop in row) {
+            for (const prop in row) {
               newRelicError[prop] = row[prop];
             }
 

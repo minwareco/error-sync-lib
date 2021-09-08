@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Alert, AlertContent, CacheName, Error, ErrorGroup, ErrorPriority, Ticket, TicketContent } from './models';
 import {
   AlertProviderInterface,
@@ -7,8 +8,6 @@ import {
   TicketProviderInterface
 } from './interfaces';
 import { ErrorCountPrioritizationProvider } from "./providers";
-
-const crypto = require('crypto');
 
 export type SynchronizerError = {
   message: string,
@@ -48,7 +47,7 @@ export class Synchronizer {
     }
 
     // apply defaults for anything which is not set
-    for (let provider of this.config.errors) {
+    for (const provider of this.config.errors) {
       provider.lookbackHours ??= 24;
       provider.maxErrors ??= 1000;
       provider.prioritizationProvider ??= new ErrorCountPrioritizationProvider();
@@ -56,7 +55,7 @@ export class Synchronizer {
   }
 
   public async run(): Promise<SynchronizerResult> {
-    let finalResult: SynchronizerResult = {
+    const finalResult: SynchronizerResult = {
       completedErrorGroups: [],
       errors: [],
       exitCode: 0

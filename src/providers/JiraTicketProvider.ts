@@ -1,6 +1,6 @@
 import { TicketProviderInterface } from '../interfaces';
 import { ErrorGroup, ErrorPriority, Ticket, TicketContent } from '../models';
-const JiraApi = require('jira-client');
+import JiraApi from 'jira-client';
 
 export type JiraBasicAuthConfig = {
   username: string,
@@ -19,7 +19,7 @@ export type JiraTicketConfig = {
   issueTypeId: string,
   openTransitionId: string,
   componentIds?: string[],
-  priorityMap?: object,
+  priorityMap?: Record<string, string>,
 }
 
 export type JiraTicketProviderConfig = {
@@ -47,7 +47,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
       };
     }
 
-    let jiraClientConfig: any = {
+    const jiraClientConfig: any = {
       protocol: 'https',
       host: this.config.host,
       apiVersion: '2',
@@ -114,7 +114,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
 
     // optionally specify components
     if (this.config.ticket.components) {
-      let components = [];
+      const components = [];
       for (const componentId in this.config.ticket.componentIds) {
         components.push({ id: componentId });
       }
