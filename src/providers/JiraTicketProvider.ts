@@ -162,7 +162,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
 
   public async generateTicketContent(errorGroup: ErrorGroup): Promise<TicketContent> {
     const maxInstances = 10;
-    const summary = `[${errorGroup.type}] ${errorGroup.name}`;
+    const summary = `[${errorGroup.type}] [${errorGroup.sourceName}] ${errorGroup.name}`;
 
     let description = errorGroup.name +
       '\nh3.Frequency\n' +

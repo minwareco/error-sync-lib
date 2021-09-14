@@ -196,7 +196,7 @@ export class Synchronizer {
   private createErrorGroup(error: Error, sourceName: string): ErrorGroup {
     // truncate the error to the first 500 characters
     const maxNameLength = 500;
-    error.name = `[${sourceName}] ${error.name}`.substr(0, maxNameLength);
+    error.name = error.name.substr(0, maxNameLength);
 
     // wipe out line numbers
     let normalizedName = error.name;
@@ -205,15 +205,16 @@ export class Synchronizer {
     // remove TypeError prefix from client errors that some browsers may emit
     normalizedName = normalizedName.replace(/(TypeError:\s*)/i, '');
 
-    // generate clientId from the normalized name
-    const hash = crypto.createHash('md5').update(normalizedName).digest('hex');
+    // generate clientId from the error source name and normalized error name
+    const clientIdInput = `${sourceName}:${normalizedName}`;
+    const clientId = crypto.createHash('md5').update(clientIdInput).digest('hex');
 
     return {
       name: normalizedName,
       sourceName,
       type: error.type,
       priority: ErrorPriority.P5,
-      clientId: hash,
+      clientId,
       count: error.count,
       countType: error.countType,
       ticket: null,

@@ -10,13 +10,13 @@ export enum ErrorPriority {
 }
 
 export enum ErrorCountType {
-  USERS = 'Users',
-  TRX = 'Transactions',
+  USERS = 'users',
+  TRX = 'transactions',
 }
 
 export enum ErrorType {
-  CLIENT = 'Client',
-  SERVER = 'Server',
+  CLIENT = 'client',
+  SERVER = 'server',
 }
 
 export type Error = {
