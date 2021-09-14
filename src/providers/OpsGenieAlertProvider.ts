@@ -33,10 +33,18 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
   public async findAlert(clientId: string): Promise<Alert> {
     const opsgenieAlert: any = await new Promise((resolve, reject) => {
       opsGenie.alertV2.get({
-        identifier: clientId,
+        identifier: clientId + 'fake',
         identifierType: 'alias',
       }, (error, response) => {
-        return (error ? reject(error) : resolve(response.data));
+        if (!error) {
+          return resolve(response.data);
+        } else if (error.httpStatusCode === 404) {
+          return undefined;
+        } else if (error instanceof Error) {
+          throw error;
+        } else {
+          throw new Error(error.message || error);
+        }
       });
     });
 

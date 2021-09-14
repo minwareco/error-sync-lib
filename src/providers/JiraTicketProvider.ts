@@ -165,9 +165,9 @@ export class JiraTicketProvider implements TicketProviderInterface {
     const summary = `[${errorGroup.type}] ${errorGroup.name}`;
 
     let description = errorGroup.name +
-      '\n\nh3.Frequency' +
+      '\nh3.Frequency\n' +
       `${errorGroup.count} ${errorGroup.countType} per day` +
-      '\n\nh3.Instances';
+      '\nh3.Instances\n';
 
     for (const instance of errorGroup.instances.slice(0, maxInstances)) {
       description += `${instance.name}\n\nTroubleshoot at: [${instance.debugUrl}]`;
@@ -183,7 +183,12 @@ export class JiraTicketProvider implements TicketProviderInterface {
       summary,
       description,
       priority: this.config.ticket.priorityMap[errorGroup.priority],
-      labels: ['error_sync', `error:${errorGroup.clientId}`],
+      labels: [
+        'error_sync',
+        `error:${errorGroup.clientId}`,
+        errorGroup.sourceName,
+        errorGroup.type,
+      ],
     }
   }
 
