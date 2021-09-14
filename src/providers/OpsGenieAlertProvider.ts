@@ -33,7 +33,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
   public async findAlert(clientId: string): Promise<Alert> {
     const opsgenieAlert: any = await new Promise((resolve, reject) => {
       opsGenie.alertV2.get({
-        identifier: clientId + 'fake',
+        identifier: clientId,
         identifierType: 'alias',
       }, (error, response) => {
         if (!error) {
