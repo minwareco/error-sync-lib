@@ -1,5 +1,6 @@
 import { ErrorGroup, ErrorPriority } from '../models';
-import { PrioritizationProviderInterface } from '../interfaces';
+import { ErrorPrioritizationResult, PrioritizationProviderInterface } from '../interfaces';
+import { getReadableErrorCountPeriod } from "../util/ErrorUtil";
 
 export type ErrorCountPrioritizationProviderThreshold = {
   threshold: number,
@@ -47,10 +48,14 @@ export class ErrorCountPrioritizationProvider implements PrioritizationProviderI
     this.config = config ?? DefaultErrorCountPrioritizationProviderConfig;
   }
 
-  public async determinePriority(errorGroup: ErrorGroup): Promise<ErrorPriority> {
+  public async determinePriority(errorGroup: ErrorGroup): Promise<ErrorPrioritizationResult> {
     for (const threshold of this.config.thresholds) {
       if (errorGroup.count < threshold.threshold) {
-        return threshold.priority;
+        const countPeriod = getReadableErrorCountPeriod(errorGroup.countPeriodHours);
+        return {
+          priority: threshold.priority,
+          priorityReason: `Affecting ${threshold.label} ${errorGroup.countType} per ${countPeriod}`,
+        };
       }
     }
   }

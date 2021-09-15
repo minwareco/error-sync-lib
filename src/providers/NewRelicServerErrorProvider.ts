@@ -55,6 +55,7 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
             newRelicError.type = ErrorType.SERVER;
             newRelicError.count = (newRelicError.uniqueCount > 0 ? newRelicError.uniqueCount : newRelicError.count);
             newRelicError.countType = newRelicError.uniqueCount > 0 ? ErrorCountType.USERS : ErrorCountType.TRX;
+            newRelicError.countPeriodHours = hoursBack;
           });
 
           // produce a debug URL that can be used to visualize the error in a browser

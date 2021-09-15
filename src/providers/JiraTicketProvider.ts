@@ -1,6 +1,7 @@
 import { TicketProviderInterface } from '../interfaces';
 import { ErrorGroup, ErrorPriority, Ticket, TicketContent } from '../models';
 import JiraApi from 'jira-client';
+import { getReadableErrorCountPeriod, getReadableErrorFrequency } from "../util/ErrorUtil";
 
 export type JiraBasicAuthConfig = {
   username: string,
@@ -164,13 +165,13 @@ export class JiraTicketProvider implements TicketProviderInterface {
     const maxInstances = 10;
     const summary = `[${errorGroup.type}] [${errorGroup.sourceName}] ${errorGroup.name}`;
 
-    let description = errorGroup.name +
-      '\nh3.Frequency\n' +
-      `${errorGroup.count} ${errorGroup.countType} per day` +
-      '\nh3.Instances\n';
+    let description = `{noformat}${errorGroup.name}{noformat}` +
+      '\nh4.Priority Reason\n' +
+      `${errorGroup.priorityReason}` +
+      '\nh4.Instances\n';
 
     for (const instance of errorGroup.instances.slice(0, maxInstances)) {
-      description += `${instance.name}\n\nTroubleshoot at: [${instance.debugUrl}]`;
+      description += `{noformat}${instance.name}{noformat}\n\nTroubleshoot at: [${instance.debugUrl}]`;
     }
 
     if (errorGroup.instances.length > 10) {

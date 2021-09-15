@@ -30,7 +30,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
     }
   }
 
-  public async findAlert(clientId: string): Promise<Alert> {
+  public async findAlert(clientId: string): Promise<Alert|undefined> {
     const opsgenieAlert: any = await new Promise((resolve, reject) => {
       opsGenie.alertV2.get({
         identifier: clientId,
@@ -39,23 +39,27 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
         if (!error) {
           return resolve(response.data);
         } else if (error.httpStatusCode === 404) {
-          return undefined;
+          return resolve(undefined);
         } else if (error instanceof Error) {
-          throw error;
+          return reject(error);
         } else {
-          throw new Error(error.message || error);
+          return reject(new Error(error.message || error));
         }
       });
     });
 
-    return {
-      id: clientId,
-      clientId,
-      summary: opsgenieAlert.message,
-      description: opsgenieAlert.description,
-      priority: opsgenieAlert.priority,
-      labels: [],
-      ticketUrl: opsgenieAlert.details['Ticket Link'],
+    if (!opsgenieAlert) {
+      return undefined;
+    } else {
+      return {
+        id: clientId,
+        clientId,
+        summary: opsgenieAlert.message,
+        description: opsgenieAlert.description,
+        priority: opsgenieAlert.priority,
+        labels: [],
+        ticketUrl: opsgenieAlert.details['Ticket Link'],
+      }
     }
   }
 

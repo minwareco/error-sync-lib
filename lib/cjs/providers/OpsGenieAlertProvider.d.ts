@@ -8,7 +8,7 @@ export declare type OpsGenieAlertProviderConfig = {
 export declare class OpsGenieAlertProvider implements AlertProviderInterface {
     private config;
     constructor(config: OpsGenieAlertProviderConfig);
-    findAlert(clientId: string): Promise<Alert>;
+    findAlert(clientId: string): Promise<Alert | undefined>;
     createAlert(alertContent: AlertContent): Promise<Alert>;
     updateAlert(alert: Alert): Promise<Alert>;
     generateAlertContent(errorGroup: ErrorGroup): Promise<AlertContent>;

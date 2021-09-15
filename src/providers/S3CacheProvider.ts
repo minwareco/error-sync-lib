@@ -36,7 +36,7 @@ export class S3CacheProvider implements CacheProviderInterface {
 
   public async saveAllCaches(): Promise<void> {
     for (const cacheName in this.caches) {
-      await this.setCache(CacheName[cacheName], this.caches[cacheName]);
+      await this.setCache(cacheName as CacheName, this.caches[cacheName]);
     }
   }
 
@@ -63,7 +63,6 @@ export class S3CacheProvider implements CacheProviderInterface {
   }
 
   private async setCache(name: CacheName, data: Record<any, any>): Promise<void> {
-    console.log('Saving', data);
     const s3 = new AWS.S3();
     const params = {
       Bucket: this.config.bucket,

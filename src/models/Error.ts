@@ -20,11 +20,12 @@ export enum ErrorType {
 }
 
 export type Error = {
-  name,
-  type,
-  count,
-  countType,
-  debugUrl,
+  name: string,
+  type: ErrorType,
+  count: number,
+  countType: ErrorCountType,
+  countPeriodHours: number,
+  debugUrl: string,
 };
 
 export type ErrorGroup = {
@@ -32,9 +33,11 @@ export type ErrorGroup = {
   sourceName: string,
   type: ErrorType,
   priority: string,
+  priorityReason: string,
   clientId: string,
   count: number,
   countType: ErrorCountType,
+  countPeriodHours: number,
   ticket: Ticket,
   alert: Alert,
   instances: Error[],

@@ -8,28 +8,31 @@ export declare enum ErrorPriority {
     P5 = "P5"
 }
 export declare enum ErrorCountType {
-    USERS = "Users",
-    TRX = "Transactions"
+    USERS = "users",
+    TRX = "transactions"
 }
 export declare enum ErrorType {
-    CLIENT = "Client",
-    SERVER = "Server"
+    CLIENT = "client",
+    SERVER = "server"
 }
 export declare type Error = {
-    name: any;
-    type: any;
-    count: any;
-    countType: any;
-    debugUrl: any;
+    name: string;
+    type: ErrorType;
+    count: number;
+    countType: ErrorCountType;
+    countPeriodHours: number;
+    debugUrl: string;
 };
 export declare type ErrorGroup = {
     name: string;
     sourceName: string;
     type: ErrorType;
     priority: string;
+    priorityReason: string;
     clientId: string;
     count: number;
     countType: ErrorCountType;
+    countPeriodHours: number;
     ticket: Ticket;
     alert: Alert;
     instances: Error[];

@@ -1,5 +1,5 @@
 import { ErrorGroup, ErrorPriority } from '../models';
-import { PrioritizationProviderInterface } from '../interfaces';
+import { ErrorPrioritizationResult, PrioritizationProviderInterface } from '../interfaces';
 export declare type ErrorCountPrioritizationProviderThreshold = {
     threshold: number;
     priority: ErrorPriority;
@@ -18,5 +18,5 @@ export declare const DefaultErrorCountPrioritizationProviderConfig: {
 export declare class ErrorCountPrioritizationProvider implements PrioritizationProviderInterface {
     private config;
     constructor(config?: ErrorCountPrioritizationProviderConfig);
-    determinePriority(errorGroup: ErrorGroup): Promise<ErrorPriority>;
+    determinePriority(errorGroup: ErrorGroup): Promise<ErrorPrioritizationResult>;
 }

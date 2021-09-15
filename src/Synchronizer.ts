@@ -63,34 +63,23 @@ export class Synchronizer {
 
     // run all error provider synchronizations in parallel
     try {
-      const errorPromises = this.config.errors.map(async (errorConfig) => {
-        try {
-          this.runForErrorProvider(errorConfig, finalResult);
-        } catch (e) {
-          finalResult.exitCode = 1;
-          finalResult.errors.push({
-            message: e.message || e,
-          });
-
-          console.error(e);
-        }
-      });
+      const errorPromises = await this.config.errors.map((errorConfig) => this.runForErrorProvider(errorConfig, finalResult));
 
       // check for any promise rejections from our error provider synchronizations
       const providerResults = await Promise.allSettled(errorPromises);
       for (const [index, providerResult] of providerResults.entries()) {
         if (providerResult.status === 'rejected') {
           const providerName = this.config.errors[index].name;
-          console.error('An unexpected exception occurred while trying to synchronize errors for the ' +
+          console.error('An exception occurred while trying to synchronize errors for the ' +
             `provider named "${providerName}":`, providerResult.reason);
-          finalResult.exitCode = 2;
+          finalResult.exitCode = 1;
           finalResult.errors.push({
             message: providerResult.reason.message || providerResult.reason,
           });
         }
       }
     } catch (e) {
-      finalResult.exitCode = 3;
+      finalResult.exitCode = 2;
       finalResult.errors.push({
         message: e.message || e,
       });
@@ -100,9 +89,9 @@ export class Synchronizer {
 
     // persist all cached data changes
     try {
-      this.config.cacheProvider.saveAllCaches();
+      await this.config.cacheProvider.saveAllCaches();
     } catch (e) {
-      finalResult.exitCode = 4;
+      finalResult.exitCode = 3;
       finalResult.errors.push({
         message: e.message || e,
       });
@@ -112,7 +101,7 @@ export class Synchronizer {
 
     if (finalResult.errors.length > 0) {
       console.error('Some errors were not synchronized to the ticketing and/or alerting system. Please see errors above.');
-      finalResult.exitCode = finalResult.exitCode || 5;
+      finalResult.exitCode = finalResult.exitCode || 4;
     }
 
     return finalResult;
@@ -129,7 +118,7 @@ export class Synchronizer {
     // is done because the ticket + alert has already been created and does not need to be updated.
     for (const errorGroup of errorGroups) {
       try {
-        this.syncErrorGroup(errorGroup, errorConfig);
+        await this.syncErrorGroup(errorGroup, errorConfig);
         result.completedErrorGroups.push(errorGroup);
       } catch (e) {
         result.errors.push({
@@ -145,7 +134,12 @@ export class Synchronizer {
   }
 
   private async syncErrorGroup(errorGroup: ErrorGroup, errorConfig: SynchronizerErrorProviderConfig) {
-    errorGroup.priority = await errorConfig.prioritizationProvider.determinePriority(errorGroup);
+    // determine the appropriate priority
+    const { priority, priorityReason } = await errorConfig.prioritizationProvider.determinePriority(errorGroup);
+    errorGroup.priority = priority;
+    errorGroup.priorityReason = priorityReason;
+
+    // read any cached version of the ticket and alert
     errorGroup.ticket = await this.config.cacheProvider.getObject(errorGroup.clientId, CacheName.Tickets);
     errorGroup.alert = await this.config.cacheProvider.getObject(errorGroup.clientId, CacheName.Alerts);
 
@@ -174,7 +168,7 @@ export class Synchronizer {
       isTicketReopened = true;
     }
 
-    this.config.cacheProvider.setObject(errorGroup.ticket.id, errorGroup.ticket, CacheName.Tickets, false);
+    await this.config.cacheProvider.setObject(errorGroup.clientId, errorGroup.ticket, CacheName.Tickets, false);
 
     // if our alert cache does not know about the error, then we search in the source-of-truth
     // alert system. if it is not there either, then we will end up creating a new alert.
@@ -190,7 +184,7 @@ export class Synchronizer {
       errorGroup.alert = await this.config.alertProvider.updateAlert(errorGroup.alert);
     }
 
-    this.config.cacheProvider.setObject(errorGroup.alert.id, errorGroup.alert, CacheName.Alerts, false);
+    await this.config.cacheProvider.setObject(errorGroup.clientId, errorGroup.alert, CacheName.Alerts, false);
   }
 
   private createErrorGroup(error: Error, sourceName: string): ErrorGroup {
@@ -213,10 +207,12 @@ export class Synchronizer {
       name: normalizedName,
       sourceName,
       type: error.type,
-      priority: ErrorPriority.P5,
+      priority: ErrorPriority.P5, // to be set later after aggregation is completed
+      priorityReason: 'Unknown', // to be set later after aggregation is completed
       clientId,
       count: error.count,
       countType: error.countType,
+      countPeriodHours: error.countPeriodHours,
       ticket: null,
       alert: null,
       instances: [error],
