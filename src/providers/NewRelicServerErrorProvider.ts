@@ -3,6 +3,7 @@ import { ErrorProviderInterface } from '../interfaces';
 import newrelicApi from 'newrelic-api-client';
 
 export type NewRelicServerErrorProviderConfig = {
+  accountId: string,
   appName: string,
   appConfigId: string,
   includeHosts?: [string],
@@ -20,10 +21,15 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
   }
 
   public async getErrors(hoursBack= 24, limit = 1000): Promise<Error[]> {
+    let fields = ['count(*)', 'max(appId)'];
+    if (this.config.userIdField) {
+      fields.push(`uniqueCount(${this.config.userIdField})`);
+    }
+
     const nrql = `
-      SELECT count(*), uniqueCount(COL_userId), max(appId)
+      SELECT ${fields.join(', ')}
       FROM TransactionError
-      WHERE \`request.headers.host\` LIKE '%'
+      WHERE \`appName\` = '${this.config.appName}'
       AND \`request.headers.User-Agent\` NOT LIKE '%Bot%'
       FACET \`error.message\`
       SINCE ${hoursBack} hours ago
@@ -39,7 +45,7 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
         } else if (response.statusCode > 500) {
           return resolve([]);
         } else if (response.body.error) {
-          return reject(body.error);
+          return reject(response.body.error);
         }
 
         const errors = [];
@@ -66,7 +72,7 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
             like: false
           }];
           const encodedFilters = encodeURIComponent(JSON.stringify(filters));
-          newRelicError.debugUrl = `https://rpm.newrelic.com/accounts/${appId}/applications/${newRelicError.max}/filterable_errors#/table?top_facet=transactionUiName&primary_facet=error.class&barchart=barchart&filters=${encodedFilters}`;
+          newRelicError.debugUrl = `https://rpm.newrelic.com/accounts/${this.config.accountId}/applications/${appId}/filterable_errors#/table?top_facet=transactionUiName&primary_facet=error.class&barchart=barchart&filters=${encodedFilters}`;
 
           errors.push(newRelicError);
         });
