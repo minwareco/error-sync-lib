@@ -91,12 +91,14 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
       opsGenie.alertV2.close({
         identifier: alert.clientId,
         identifierType: 'alias',
+      }, {
+        note: `Auto-closed by error-sync-lib`,
       }, (error, response) => {
         return (error ? reject(error) : resolve(response));
       });
     });
 
-    return this.createAlert(alert);
+    return await this.createAlert(alert);
   }
 
   public async generateAlertContent(errorGroup: ErrorGroup): Promise<AlertContent> {
