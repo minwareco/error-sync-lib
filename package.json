@@ -1,13 +1,14 @@
 {
   "name": "error-sync-lib",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "private": "true",
   "scripts": {
     "build": "yarn build:esm && yarn build:cjs",
     "build:esm": "rm -rf ./lib/esm && tsc",
     "build:cjs": "rm -rf ./lib/cjs && tsc --module commonjs --outDir lib/cjs",
     "lint": "eslint src --ext .ts",
-    "test": "jest --passWithNoTests src"
+    "test": "jest --passWithNoTests src",
+    "dev": "yarn build:cjs && node lib/cjs/manualTest.js"
   },
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
