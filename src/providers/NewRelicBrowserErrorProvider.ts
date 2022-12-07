@@ -32,7 +32,7 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
       WHERE \`appName\` = '${this.config.appName}'
       FACET \`errorMessage\`
       SINCE ${hoursBack} hours ago
-      LIMIT 1
+      LIMIT ${limit}
     `;
 
     return new Promise((resolve, reject) => {
