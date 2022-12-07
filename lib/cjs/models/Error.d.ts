@@ -12,6 +12,7 @@ export declare enum ErrorCountType {
     TRX = "transactions"
 }
 export declare enum ErrorType {
+    BROWSER = "browser",
     CLIENT = "client",
     SERVER = "server"
 }

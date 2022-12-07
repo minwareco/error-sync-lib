@@ -2,7 +2,7 @@ import { Error, ErrorCountType, ErrorType } from '../models';
 import { ErrorProviderInterface } from '../interfaces';
 import newrelicApi from 'newrelic-api-client';
 
-export type NewRelicServerErrorProviderConfig = {
+export type NewRelicBrowserErrorProviderConfig = {
   accountId: string,
   appName: string,
   appConfigId: string,
@@ -12,15 +12,15 @@ export type NewRelicServerErrorProviderConfig = {
   userIdField?: string
 }
 
-export class NewRelicServerErrorProvider implements ErrorProviderInterface {
-  private config: NewRelicServerErrorProviderConfig;
+export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
+  private config: NewRelicBrowserErrorProviderConfig;
   private newrelicApi: any;
 
-  public constructor(config: NewRelicServerErrorProviderConfig) {
+  public constructor(config: NewRelicBrowserErrorProviderConfig) {
     this.config = config;
   }
 
-  public async getErrors(hoursBack= 24, limit = 1000): Promise<Error[]> {
+  public async getErrors(hoursBack = 24, limit = 1000): Promise<Error[]> {
     const fields = ['count(*)', 'max(appId)'];
     if (this.config.userIdField) {
       fields.push(`uniqueCount(${this.config.userIdField})`);
@@ -28,13 +28,14 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
 
     const nrql = `
       SELECT ${fields.join(', ')}
-      FROM TransactionError
+      FROM JavaScriptError
       WHERE \`appName\` = '${this.config.appName}'
-      AND \`request.headers.User-Agent\` NOT LIKE '%Bot%'
-      FACET \`error.message\`
+      FACET \`errorMessage\`
       SINCE ${hoursBack} hours ago
-      LIMIT ${limit}
+      LIMIT 1
     `;
+
+    console.log('NRQL = ' + nrql);
 
     return new Promise((resolve, reject) => {
       newrelicApi.insights.query(nrql, this.config.appConfigId, (error, response, body) => {
@@ -58,7 +59,7 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
             }
 
             // determine other standard error properties from the native error
-            newRelicError.type = ErrorType.SERVER;
+            newRelicError.type = ErrorType.BROWSER;
             newRelicError.count = (newRelicError.uniqueCount > 0 ? newRelicError.uniqueCount : newRelicError.count);
             newRelicError.countType = newRelicError.uniqueCount > 0 ? ErrorCountType.USERS : ErrorCountType.TRX;
             newRelicError.countPeriodHours = hoursBack;
@@ -66,13 +67,17 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
 
           // produce a debug URL that can be used to visualize the error in a browser
           const appId = newRelicError.max;
-          const filters = [{
-            key: 'error.message',
-            value: newRelicError.name,
-            like: false
-          }];
-          const encodedFilters = encodeURIComponent(JSON.stringify(filters));
-          newRelicError.debugUrl = `https://rpm.newrelic.com/accounts/${this.config.accountId}/applications/${appId}/filterable_errors#/table?top_facet=transactionUiName&primary_facet=error.class&barchart=barchart&filters=${encodedFilters}`;
+
+          // TODO: possibly fix this, but NewRelic does not have any documented way to produce a link which
+          //       points at an error directly anymore...
+          // const filters = [{
+          //   key: 'errorMessage',
+          //   value: newRelicError.name,
+          //   like: false
+          // }];
+          // const encodedFilters = encodeURIComponent(JSON.stringify(filters));
+          // newRelicError.debugUrl = `https://rpm.newrelic.com/accounts/${this.config.accountId}/browser/${appId}/errors#/table?top_facet=pageUrl&primary_facet=errorClass&barchart=barchart&filters=${encodedFilters}`;
+          newRelicError.debugUrl = `https://rpm.newrelic.com/accounts/${this.config.accountId}/browser/${appId}/errors`;
 
           errors.push(newRelicError);
         });

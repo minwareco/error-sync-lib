@@ -15,6 +15,7 @@ export enum ErrorCountType {
 }
 
 export enum ErrorType {
+  BROWSER = 'browser',
   CLIENT = 'client',
   SERVER = 'server',
 }
