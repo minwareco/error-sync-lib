@@ -35,8 +35,6 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
       LIMIT 1
     `;
 
-    console.log('NRQL = ' + nrql);
-
     return new Promise((resolve, reject) => {
       newrelicApi.insights.query(nrql, this.config.appConfigId, (error, response, body) => {
         if (error) {
