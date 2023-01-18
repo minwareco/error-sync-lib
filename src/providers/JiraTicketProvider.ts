@@ -163,7 +163,10 @@ export class JiraTicketProvider implements TicketProviderInterface {
 
   public async generateTicketContent(errorGroup: ErrorGroup): Promise<TicketContent> {
     const maxInstances = 10;
-    const summary = `[${errorGroup.type}] [${errorGroup.sourceName}] ${errorGroup.name}`;
+    const groupNameSanitized = errorGroup.name
+      .replace("\r\n", ' ')
+      .replace("\n", ' ');
+    const summary = `[${errorGroup.type}] [${errorGroup.sourceName}] ${groupNameSanitized}`;
 
     let description = `{noformat}${errorGroup.name}{noformat}` +
       '\nh4.Priority Reason\n' +
