@@ -175,7 +175,22 @@ export class JiraTicketProvider implements TicketProviderInterface {
       '\nh4.Instances\n';
 
     for (const instance of errorGroup.instances.slice(0, maxInstances)) {
-      description += `{noformat}${instance.name}{noformat}\n\nTroubleshoot at: [${instance.debugUrl}]`;
+      let hasDetail = false;
+      description += `{noformat}${instance.name}{noformat}`;
+      
+      if (instance.debugUrl) {
+        description += `\n\nTroubleshoot at: [${instance.debugUrl}]`;
+        hasDetail = true;
+      }
+      
+      if (instance.debugMessage) {
+        description += `\n\n${instance.debugMessage}`;
+        hasDetail = true;
+      }
+
+      if (!hasDetail) {
+        description += `\n\n_no debug info available_`;
+      }
     }
 
     if (errorGroup.instances.length > 10) {
