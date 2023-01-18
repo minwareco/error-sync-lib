@@ -164,8 +164,8 @@ export class JiraTicketProvider implements TicketProviderInterface {
   public async generateTicketContent(errorGroup: ErrorGroup): Promise<TicketContent> {
     const maxInstances = 10;
     const groupNameSanitized = errorGroup.name
-      .replace("\r\n", ' ')
-      .replace("\n", ' ');
+      .replace(/\r\n/g, ' ')
+      .replace(/\n/g, ' ');
     const summary = `[${errorGroup.type}] [${errorGroup.sourceName}] ${groupNameSanitized}`;
 
     let description = `{noformat}${errorGroup.name}{noformat}` +
