@@ -14,7 +14,8 @@ export declare enum ErrorCountType {
 export declare enum ErrorType {
     BROWSER = "browser",
     CLIENT = "client",
-    SERVER = "server"
+    SERVER = "server",
+    DATA = "data"
 }
 export declare type Error = {
     name: string;
@@ -22,7 +23,8 @@ export declare type Error = {
     count: number;
     countType: ErrorCountType;
     countPeriodHours: number;
-    debugUrl: string;
+    debugUrl?: string;
+    debugMessage?: string;
 };
 export declare type ErrorGroup = {
     name: string;
