@@ -40,6 +40,12 @@ export class S3CacheProvider implements CacheProviderInterface {
     }
   }
 
+  public async clearAllCaches(): Promise<void> {
+    for (const cacheName in this.caches) {
+      await this.setCache(cacheName as CacheName, {});
+    }
+  }
+
   private async getCache(name: CacheName): Promise<Record<any, any>> {
     if (!Object.prototype.hasOwnProperty.call(this.caches, name)) {
       const s3 = new AWS.S3();

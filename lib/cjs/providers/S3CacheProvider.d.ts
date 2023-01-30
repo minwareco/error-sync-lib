@@ -12,6 +12,7 @@ export declare class S3CacheProvider implements CacheProviderInterface {
     getObject<T>(id: string, cacheName: CacheName): Promise<T>;
     setObject<T>(id: string, value: T, cacheName: CacheName, saveCache?: boolean): Promise<void>;
     saveAllCaches(): Promise<void>;
+    clearAllCaches(): Promise<void>;
     private getCache;
     private setCache;
 }
