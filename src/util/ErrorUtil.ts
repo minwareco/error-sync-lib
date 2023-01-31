@@ -1,7 +1,7 @@
 import { ErrorGroup } from "../models";
 
 export const getReadableErrorFrequency = (error: ErrorGroup) => {
-  let countPeriod = getReadableErrorCountPeriod(error.countPeriodHours);
+  const countPeriod = getReadableErrorCountPeriod(error.countPeriodHours);
   return `${error.count} ${error.countType} ${countPeriod}`; // e.g. 11 users per day
 }
 
