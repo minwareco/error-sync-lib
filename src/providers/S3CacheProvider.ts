@@ -41,8 +41,8 @@ export class S3CacheProvider implements CacheProviderInterface {
   }
 
   public async clearAllCaches(): Promise<void> {
-    for (const cacheName in this.caches) {
-      await this.setCache(cacheName as CacheName, {});
+    for (const cacheName of Object.values(CacheName)) {
+      await this.setCache(cacheName, {});
     }
   }
 
