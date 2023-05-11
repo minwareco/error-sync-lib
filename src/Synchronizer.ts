@@ -146,6 +146,7 @@ export class Synchronizer {
     // if our ticket cache does not know about the error, then we search in the source-of-truth
     // ticketing system. if it is not there either, then we will end up creating a new ticket.
     if (!errorGroup.ticket) {
+      console.log(`Refreshing ticket from provider for ID: ${errorGroup.clientId}`);
       errorGroup.ticket = await this.config.ticketProvider.findTicket(errorGroup.clientId);
     }
 
@@ -155,15 +156,18 @@ export class Synchronizer {
 
     // create / update ticket
     if (!errorGroup.ticket) {
+      console.log(`Creating new ticket for: ${errorGroup.name}`);
       errorGroup.ticket = await this.config.ticketProvider.createTicket(freshTicketContent);
       freshAlertContent.ticketUrl = errorGroup.ticket.url;
     } else if (this.doesTicketNeedUpdate(errorGroup.ticket, freshTicketContent)) {
+      console.log(`Updating ticket content for ID: ${errorGroup.ticket.id}`);
       Object.assign(errorGroup.ticket, freshTicketContent);
       errorGroup.ticket = await this.config.ticketProvider.updateTicket(errorGroup.ticket);
     }
 
     // if the ticket is closed and meets certain conditions, then reopen it
     if (this.doesTicketNeedReopening(errorGroup.ticket)) {
+      console.log(`Reopening ticket for ID: ${errorGroup.ticket.id}`);
       errorGroup.ticket = await this.config.ticketProvider.reopenTicket(errorGroup.ticket);
       isTicketReopened = true;
     }
@@ -173,13 +177,16 @@ export class Synchronizer {
     // if our alert cache does not know about the error, then we search in the source-of-truth
     // alert system. if it is not there either, then we will end up creating a new alert.
     if (!errorGroup.alert) {
+      console.log(`Refreshing alert from provider for ID: ${errorGroup.clientId}`);
       errorGroup.alert = await this.config.alertProvider.findAlert(errorGroup.clientId);
     }
 
     // create / update alert
     if (!errorGroup.alert) {
+      console.log(`Creating new alert for: ${errorGroup.name}`);
       errorGroup.alert = await this.config.alertProvider.createAlert(freshAlertContent);
     } else if (isTicketReopened || this.doesAlertNeedUpdate(errorGroup.alert, freshAlertContent)) {
+      console.log(`Updating alert content for ID: ${errorGroup.alert.clientId}`);
       Object.assign(errorGroup.alert, freshAlertContent);
       errorGroup.alert = await this.config.alertProvider.updateAlert(errorGroup.alert);
     }
