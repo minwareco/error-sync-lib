@@ -241,6 +241,15 @@ export class Synchronizer {
       return false;
     }
 
+    const shouldIgnore = (
+      existingTicket.labels.includes('ignore') ||
+      existingTicket.labels.includes('wont fix')
+    );
+
+    if (shouldIgnore) {
+      return false;
+    }
+
     // only re-open if the ticket has been closed for 24 hours
     const currentDate = new Date();
     const resolutionDate = new Date(existingTicket.resolutionDate);

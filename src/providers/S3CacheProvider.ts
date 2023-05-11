@@ -41,13 +41,14 @@ export class S3CacheProvider implements CacheProviderInterface {
   }
 
   public async clearAllCaches(): Promise<void> {
+    console.log('clearAllCaches()');
     for (const cacheName of Object.values(CacheName)) {
       await this.setCache(cacheName, {});
     }
   }
 
   private async getCache(name: CacheName): Promise<Record<any, any>> {
-    if (!Object.prototype.hasOwnProperty.call(this.caches, name)) {
+    if (!this.caches[name]) {
       const s3 = new AWS.S3();
       const params = {
         Bucket: this.config.bucket,
@@ -77,8 +78,10 @@ export class S3CacheProvider implements CacheProviderInterface {
       ContentType: 'application/json; charset=utf-8',
     };
 
-    return new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       s3.putObject(params, (err) => err ? reject(err) : resolve());
     });
+
+    this.caches[name] = data;
   }
 }

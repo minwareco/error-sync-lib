@@ -90,7 +90,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
       description: jiraTicket.fields.description,
       labels: jiraTicket.fields.labels,
       isOpen: jiraTicket.fields.resolution === null,
-      resolutionDate: jiraTicket.fields.resolution,
+      resolutionDate: jiraTicket.fields.resolutiondate,
     };
   }
 
@@ -177,12 +177,12 @@ export class JiraTicketProvider implements TicketProviderInterface {
     for (const instance of errorGroup.instances.slice(0, maxInstances)) {
       let hasDetail = false;
       description += `{noformat}${instance.name}{noformat}`;
-      
+
       if (instance.debugUrl) {
         description += `\n\nTroubleshoot at: [${instance.debugUrl}]`;
         hasDetail = true;
       }
-      
+
       if (instance.debugMessage) {
         description += `\n\n${instance.debugMessage}`;
         hasDetail = true;
