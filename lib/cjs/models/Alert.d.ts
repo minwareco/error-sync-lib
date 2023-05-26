@@ -5,6 +5,7 @@ export declare type AlertContent = {
     description: string;
     labels: string[];
     ticketUrl: string | undefined;
+    status: string;
 };
 export declare type Alert = AlertContent & {
     id: string;

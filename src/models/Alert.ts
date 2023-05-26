@@ -5,6 +5,7 @@ export type AlertContent = {
   description: string,
   labels: string[],
   ticketUrl: string|undefined,
+  status: string,
 }
 
 export type Alert = AlertContent & {

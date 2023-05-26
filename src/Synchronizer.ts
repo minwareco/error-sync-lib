@@ -165,8 +165,13 @@ export class Synchronizer {
       errorGroup.ticket = await this.config.ticketProvider.updateTicket(errorGroup.ticket);
     }
 
+    const shouldIgnore = (
+      errorGroup.ticket.labels.includes('ignore') ||
+      errorGroup.ticket.labels.includes('wont fix')
+    );
+
     // if the ticket is closed and meets certain conditions, then reopen it
-    if (this.doesTicketNeedReopening(errorGroup.ticket)) {
+    if (!shouldIgnore && this.doesTicketNeedReopening(errorGroup.ticket)) {
       console.log(`Reopening ticket for ID: ${errorGroup.ticket.id}`);
       errorGroup.ticket = await this.config.ticketProvider.reopenTicket(errorGroup.ticket);
       isTicketReopened = true;
@@ -181,8 +186,15 @@ export class Synchronizer {
       errorGroup.alert = await this.config.alertProvider.findAlert(errorGroup.clientId);
     }
 
-    // create / update alert
-    if (!errorGroup.alert) {
+    if (shouldIgnore || !errorGroup.ticket.isOpen) {
+      // if a ticket has been closed or is being ignored, then close the alert if it
+      // is currently open
+      if (errorGroup.alert?.status === 'open') {
+        console.log(`Auto-closing alert for ID: ${errorGroup.alert.clientId}`);
+        await this.config.alertProvider.closeAlert(errorGroup.alert);
+        errorGroup.alert.status = 'closed';
+      }
+    } else if (!errorGroup.alert) {
       console.log(`Creating new alert for: ${errorGroup.name}`);
       errorGroup.alert = await this.config.alertProvider.createAlert(freshAlertContent);
     } else if (isTicketReopened || this.doesAlertNeedUpdate(errorGroup.alert, freshAlertContent)) {
@@ -245,15 +257,6 @@ export class Synchronizer {
 
   private doesTicketNeedReopening(existingTicket: Ticket): boolean {
     if (existingTicket.isOpen) {
-      return false;
-    }
-
-    const shouldIgnore = (
-      existingTicket.labels.includes('ignore') ||
-      existingTicket.labels.includes('wont fix')
-    );
-
-    if (shouldIgnore) {
       return false;
     }
 

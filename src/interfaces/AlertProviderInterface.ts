@@ -7,5 +7,7 @@ export interface AlertProviderInterface {
 
   updateAlert(alert: Alert): Promise<Alert>;
 
+  closeAlert(alert: Alert): Promise<void>;
+
   generateAlertContent(errorGroup: ErrorGroup): Promise<AlertContent>;
 }

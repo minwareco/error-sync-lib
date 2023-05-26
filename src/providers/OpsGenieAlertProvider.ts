@@ -59,6 +59,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
         priority: opsgenieAlert.priority,
         labels: [],
         ticketUrl: opsgenieAlert.details['Ticket Link'],
+        status: opsgenieAlert.status,
       }
     }
   }
@@ -87,6 +88,11 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
 
   public async updateAlert(alert: Alert): Promise<Alert> {
     // an OpsGenie alert cannot be updated, so we just recreate it
+    await this.closeAlert(alert);
+    return await this.createAlert(alert);
+  }
+
+  public async closeAlert(alert: Alert): Promise<void> {
     await new Promise((resolve, reject) => {
       opsGenie.alertV2.close({
         identifier: alert.clientId,
@@ -97,8 +103,6 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
         return (error ? reject(error) : resolve(response));
       });
     });
-
-    return await this.createAlert(alert);
   }
 
   public async generateAlertContent(errorGroup: ErrorGroup): Promise<AlertContent> {
@@ -110,7 +114,8 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
       description: errorGroup.name,
       priority: this.config.priorityMap[errorGroup.priority],
       labels: [],
-      ticketUrl: errorGroup.ticket?.url
+      ticketUrl: errorGroup.ticket?.url,
+      status: 'open',
     }
   }
 }
