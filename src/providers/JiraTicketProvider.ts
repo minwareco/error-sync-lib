@@ -120,7 +120,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
         components.push({ id: componentId });
       }
 
-      jiraTicketRequest.components = components;
+      jiraTicketRequest.fields.components = components;
     }
 
     const jiraTicket = await this.jiraClient.addNewIssue(jiraTicketRequest);
