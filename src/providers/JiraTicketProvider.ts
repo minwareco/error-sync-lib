@@ -116,7 +116,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
     // optionally specify components
     if (this.config.ticket.componentIds) {
       const components = [];
-      for (const componentId in this.config.ticket.componentIds) {
+      for (const componentId of this.config.ticket.componentIds) {
         components.push({ id: componentId });
       }
 
