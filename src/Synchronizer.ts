@@ -217,6 +217,8 @@ export class Synchronizer {
 
     // remove TypeError prefix from client errors that some browsers may emit
     normalizedName = normalizedName.replace(/(TypeError:\s*)/i, '');
+    // trim space that might not be preserved consistently in all alter/ticket providers
+    normalizedName = normalizedName.trim();
 
     // generate clientId from the error source name and normalized error name
     const clientIdInput = `${sourceName}:${normalizedName}`;
