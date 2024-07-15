@@ -200,9 +200,6 @@ export class Synchronizer {
     } else if (!errorGroup.alert) {
       console.log(`Creating new alert for: ${errorGroup.name}`);
       errorGroup.alert = await this.config.alertProvider.createAlert(freshAlertContent);
-    } else if (errorGroup.alert.status !== 'open') {
-      console.log(`Creating new alert due to previous alert is closed: ${errorGroup.name}`);
-      errorGroup.alert = await this.config.alertProvider.createAlert(freshAlertContent);
     } else if (isTicketReopened || this.doesAlertNeedUpdate(errorGroup.alert, freshAlertContent)) {
       console.log(`Updating alert priority for ID: ${errorGroup.alert.clientId}`);
       if (isTicketReopened) {
