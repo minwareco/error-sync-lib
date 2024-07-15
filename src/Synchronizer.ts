@@ -184,6 +184,9 @@ export class Synchronizer {
     if (!errorGroup.alert) {
       console.log(`Refreshing alert from provider for ID: ${errorGroup.clientId}`);
       errorGroup.alert = await this.config.alertProvider.findAlert(errorGroup.clientId);
+      if (!errorGroup.alert) {
+        console.log(`Existing alert not found from provider for ID: ${errorGroup.clientId}`);
+      }
     }
 
     if (shouldIgnore || !errorGroup.ticket.isOpen) {
@@ -197,10 +200,18 @@ export class Synchronizer {
     } else if (!errorGroup.alert) {
       console.log(`Creating new alert for: ${errorGroup.name}`);
       errorGroup.alert = await this.config.alertProvider.createAlert(freshAlertContent);
+    } else if (errorGroup.alert.status !== 'open') {
+      console.log(`Creating new alert due to previous alert is closed: ${errorGroup.name}`);
+      errorGroup.alert = await this.config.alertProvider.createAlert(freshAlertContent);
     } else if (isTicketReopened || this.doesAlertNeedUpdate(errorGroup.alert, freshAlertContent)) {
-      console.log(`Updating alert content for ID: ${errorGroup.alert.clientId}`);
+      console.log(`Updating alert priority for ID: ${errorGroup.alert.clientId}`);
+      if (isTicketReopened) {
+        console.log('isTicketReopened: ', isTicketReopened);
+      }
+      console.log('Existing alert: ', errorGroup.alert);
+      console.log('New alert: ', freshAlertContent);
       Object.assign(errorGroup.alert, freshAlertContent);
-      errorGroup.alert = await this.config.alertProvider.updateAlert(errorGroup.alert);
+      await this.config.alertProvider.updateAlert(errorGroup.alert);
     }
 
     await this.config.cacheProvider.setObject(errorGroup.clientId, errorGroup.alert, CacheName.Alerts, false);
@@ -278,7 +289,8 @@ export class Synchronizer {
   private doesAlertNeedUpdate(existingAlert: Alert, freshAlertContent: AlertContent): boolean {
     return existingAlert.summary !== freshAlertContent.summary ||
       existingAlert.description !== freshAlertContent.description ||
-      existingAlert.priority !== freshAlertContent.priority ||
+      // Don't check priority at this time
+      // existingAlert.priority !== freshAlertContent.priority ||
       existingAlert.ticketUrl !== freshAlertContent.ticketUrl;
   }
 }
