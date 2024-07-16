@@ -106,7 +106,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
   }
 
   public async generateAlertContent(errorGroup: ErrorGroup): Promise<AlertContent> {
-    const summary = `[${errorGroup.type}] [${errorGroup.sourceName}] ${errorGroup.name}`.substr(0, 130);
+    const summary = `[${errorGroup.type}] [${errorGroup.sourceName}] ${errorGroup.name}`.substr(0, 130).trim();
 
     return {
       clientId: errorGroup.clientId,

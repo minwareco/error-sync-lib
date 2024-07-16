@@ -284,10 +284,10 @@ export class Synchronizer {
   }
 
   private doesAlertNeedUpdate(existingAlert: Alert, freshAlertContent: AlertContent): boolean {
-    return existingAlert.summary !== freshAlertContent.summary ||
-      existingAlert.description !== freshAlertContent.description ||
+    return existingAlert.summary.trim() !== freshAlertContent.summary.trim()
+      || existingAlert.description.trim() !== freshAlertContent.description.trim()
       // Don't check priority at this time
-      // existingAlert.priority !== freshAlertContent.priority ||
-      existingAlert.ticketUrl !== freshAlertContent.ticketUrl;
+      // || existingAlert.priority !== freshAlertContent.priority
+      || existingAlert.ticketUrl !== freshAlertContent.ticketUrl;
   }
 }
