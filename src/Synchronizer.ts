@@ -279,8 +279,7 @@ export class Synchronizer {
 
   private doesTicketNeedUpdate(existingTicket: Ticket, freshTicketContent: TicketContent): boolean {
     return existingTicket.summary !== freshTicketContent.summary ||
-      existingTicket.description !== freshTicketContent.description ||
-      existingTicket.priority !== freshTicketContent.priority;
+      existingTicket.description !== freshTicketContent.description;
   }
 
   private doesAlertNeedUpdate(existingAlert: Alert, freshAlertContent: AlertContent): boolean {
