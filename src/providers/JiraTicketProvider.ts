@@ -202,7 +202,8 @@ export class JiraTicketProvider implements TicketProviderInterface {
       clientId: errorGroup.clientId,
       summary,
       description,
-      priority: this.config.ticket.priorityMap[errorGroup.priority],
+      // Hard code priority to Low per https://minware.atlassian.net/browse/MW-4435
+      priority: this.config.ticket.priorityMap[ErrorPriority.P4],
       labels: [
         'error_sync',
         `error:${errorGroup.clientId}`,
