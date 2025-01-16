@@ -1,7 +1,6 @@
 import { TicketProviderInterface } from '../interfaces';
 import { ErrorGroup, ErrorPriority, Ticket, TicketContent } from '../models';
 import JiraApi from 'jira-client';
-import { getReadableErrorCountPeriod, getReadableErrorFrequency } from "../util/ErrorUtil";
 
 export type JiraBasicAuthConfig = {
   username: string,
