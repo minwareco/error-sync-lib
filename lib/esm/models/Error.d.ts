@@ -25,6 +25,7 @@ export declare type Error = {
     countPeriodHours: number;
     debugUrl?: string;
     debugMessage?: string;
+    ticketType?: string;
 };
 export declare type ErrorGroup = {
     name: string;

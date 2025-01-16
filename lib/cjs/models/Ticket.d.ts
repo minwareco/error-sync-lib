@@ -4,6 +4,7 @@ export declare type TicketContent = {
     priority: string;
     description: string;
     labels: string[];
+    ticketType: string;
 };
 export declare type Ticket = TicketContent & {
     id: string;
