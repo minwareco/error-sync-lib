@@ -29,6 +29,7 @@ export type Error = {
   countPeriodHours: number,
   debugUrl?: string,
   debugMessage?: string,
+  ticketType?: string,
 };
 
 export type ErrorGroup = {
