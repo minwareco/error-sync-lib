@@ -1,7 +1,6 @@
 import { TicketProviderInterface } from '../interfaces';
 import { ErrorGroup, ErrorPriority, Ticket, TicketContent } from '../models';
 import JiraApi from 'jira-client';
-import { getReadableErrorCountPeriod, getReadableErrorFrequency } from "../util/ErrorUtil";
 
 export type JiraBasicAuthConfig = {
   username: string,
@@ -91,6 +90,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
       labels: jiraTicket.fields.labels,
       isOpen: jiraTicket.fields.resolution === null,
       resolutionDate: jiraTicket.fields.resolutiondate,
+      ticketType: jiraTicket.fields.issuetype.id,
     };
   }
 
@@ -101,7 +101,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
         summary: ticketContent.summary,
         description: ticketContent.description,
         issuetype: {
-          id: this.config.ticket.issueTypeId,
+          id: ticketContent.ticketType || this.config.ticket.issueTypeId,
         },
         labels: ticketContent.labels,
         priority: {
@@ -210,6 +210,8 @@ export class JiraTicketProvider implements TicketProviderInterface {
         errorGroup.sourceName,
         errorGroup.type,
       ],
+      // Use the ticketType from the first error instance if available, otherwise fall back to config
+      ticketType: errorGroup.instances[0]?.ticketType || this.config.ticket.issueTypeId,
     }
   }
 

@@ -4,7 +4,7 @@ export type TicketContent = {
   priority: string,
   description: string,
   labels: string[],
-
+  ticketType: string,
 }
 
 export type Ticket = TicketContent & {
