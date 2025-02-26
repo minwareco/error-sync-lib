@@ -14,13 +14,83 @@ export type NewRelicBrowserErrorProviderConfig = {
 
 export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
   private config: NewRelicBrowserErrorProviderConfig;
-  private newrelicApi: any;
+  private appIdToEntityGuid: Map<number, string> | null = null;
+  private appIdToEntityGuidPromise: Promise<Map<number, string>> | null = null;
 
   public constructor(config: NewRelicBrowserErrorProviderConfig) {
     this.config = config;
   }
 
+  /**
+   * Gets the mapping of appId to entityGuid with instance-level caching
+   * @param hoursBack Number of hours to look back for data
+   * @returns A map of appId to entityGuid
+   */
+  private async getAppIdToEntityGuidMap(hoursBack = 25): Promise<Map<number, string>> {
+    // Return cached map if available
+    if (this.appIdToEntityGuid) {
+      return this.appIdToEntityGuid;
+    }
+
+    // Return in-progress promise if one exists
+    if (this.appIdToEntityGuidPromise) {
+      return this.appIdToEntityGuidPromise;
+    }
+
+    // Create and cache the promise
+    this.appIdToEntityGuidPromise = this.fetchAppIdToEntityGuidMap(hoursBack);
+    
+    try {
+      // Wait for the promise to resolve and cache the result
+      const map = await this.appIdToEntityGuidPromise;
+      this.appIdToEntityGuid = map;
+      return map;
+    } catch (error) {
+      // Clear the promise cache on error so we can retry
+      this.appIdToEntityGuidPromise = null;
+      throw error;
+    }
+  }
+
+  // as of the time that this was added, it wasn't possible to get 
+  // the entityGuid from the JavaScriptError table as part of an aggregate query
+  // so we have to do a separate query to map appId to entityGuid
+  private async fetchAppIdToEntityGuidMap(hoursBack = 25): Promise<Map<number, string>> {
+    const nrql = `SELECT uniques(entityGuid, 1000), uniques(appId, 1000) FROM JavaScriptError SINCE ${hoursBack} hours ago UNTIL now`;
+
+    return new Promise((resolve, reject) => {
+      newrelicApi.insights.query(nrql, this.config.appConfigId, (error, response, body) => {
+        if (error) {
+          return reject(error);
+        } else if (response.statusCode !== 200) {
+          return reject(response.body);
+        } else if (response.statusCode > 500) {
+          return resolve(new Map());
+        } else if (response.body?.error) {
+          return reject(response.body.error);
+        }
+
+        // Build the map from appId -> entityGuid
+        const map = new Map<number, string>();
+
+        if (Array.isArray(body.results) && body.results.length > 0) {
+          const events = body.results[0]?.events || [];
+          events.forEach(event => {
+            if (event.entityGuid && event.appId) {
+              map.set(event.appId, event.entityGuid);
+            }
+          });
+        }
+
+        resolve(map);
+      });
+    });
+  }
+
   public async getErrors(hoursBack = 24, limit = 1000): Promise<Error[]> {
+    // Ensure we have the appId to entityGuid mapping before proceeding
+    await this.getAppIdToEntityGuidMap(hoursBack+1);
+
     const fields = ['count(*)', 'max(appId)'];
     if (this.config.userIdField) {
       fields.push(`uniqueCount(${this.config.userIdField})`);
@@ -63,19 +133,13 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
             newRelicError.countPeriodHours = hoursBack;
           });
 
-          // produce a debug URL that can be used to visualize the error in a browser
-          const appId = newRelicError.max;
+          // we need to map the appId to the entityGuid to produce a debug Url
+          const appId = newRelicError['max(appId)'];
+          const entityGuid = this.appIdToEntityGuid?.get(appId);
 
           // TODO: possibly fix this, but NewRelic does not have any documented way to produce a link which
-          //       points at an error directly anymore...
-          // const filters = [{
-          //   key: 'errorMessage',
-          //   value: newRelicError.name,
-          //   like: false
-          // }];
-          // const encodedFilters = encodeURIComponent(JSON.stringify(filters));
-          // newRelicError.debugUrl = `https://rpm.newrelic.com/accounts/${this.config.accountId}/browser/${appId}/errors#/table?top_facet=pageUrl&primary_facet=errorClass&barchart=barchart&filters=${encodedFilters}`;
-          newRelicError.debugUrl = `https://rpm.newrelic.com/accounts/${this.config.accountId}/browser/${appId}/errors`;
+          // points at an error directly anymore...
+          newRelicError.debugUrl = `https://one.newrelic.com/nr1-core/errors-inbox/entity-inbox/${entityGuid}?duration=${hoursBack * 3600000}`;
 
           errors.push(newRelicError);
         });
