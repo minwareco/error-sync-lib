@@ -11,7 +11,10 @@ export declare type NewRelicBrowserErrorProviderConfig = {
 };
 export declare class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
     private config;
-    private newrelicApi;
+    private appIdToEntityGuid;
+    private appIdToEntityGuidPromise;
     constructor(config: NewRelicBrowserErrorProviderConfig);
+    private getAppIdToEntityGuidMap;
+    private fetchAppIdToEntityGuidMap;
     getErrors(hoursBack?: number, limit?: number): Promise<Error[]>;
 }
