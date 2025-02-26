@@ -134,7 +134,8 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
           });
 
           // we need to map the appId to the entityGuid to produce a debug Url
-          const entityGuid = this.appIdToEntityGuid?.get(newRelicError.max);
+          const appId = newRelicError['max(appId)'];
+          const entityGuid = this.appIdToEntityGuid?.get(appId);
 
           // TODO: possibly fix this, but NewRelic does not have any documented way to produce a link which
           // points at an error directly anymore...

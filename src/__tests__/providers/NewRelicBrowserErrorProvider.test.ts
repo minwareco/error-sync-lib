@@ -226,9 +226,8 @@ describe('NewRelicBrowserErrorProvider', () => {
       expect(errors[0].countType).toBe(ErrorCountType.TRX);
       expect(errors[0].countPeriodHours).toBe(24);
       
-      // For the debugUrl test, we'll just check that it contains the duration
-      // since the entityGuid mapping might be complex to test
-      expect(errors[0].debugUrl).toContain('duration=86400000');
+      // Verify the URL includes the entityGuid parameter with the correct value
+      expect(errors[0].debugUrl).toContain('guid-123');
     });
 
     it('should handle user count when userIdField is provided', async () => {
