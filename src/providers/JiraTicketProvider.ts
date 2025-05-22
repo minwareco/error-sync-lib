@@ -198,6 +198,12 @@ export class JiraTicketProvider implements TicketProviderInterface {
       description += `\n\n_...${additional} older instances not shown_`;
     }
 
+
+    // Add a message with a link the mixpanel events page and then
+    if (errorGroup.mixpanelIds) {
+      description += `\n\n[Mixpanel Events](${makeReportUrl(errorGroup.instances[0].name.substring(0, 100).trim(), errorGroup.mixpanelIds)})`;
+    }
+
     return {
       clientId: errorGroup.clientId,
       summary,
@@ -220,3 +226,16 @@ export class JiraTicketProvider implements TicketProviderInterface {
   }
 }
 
+const searchParamWithPlaceholder = `~(~(resourceType~'event~propertyName~'message~propertyObjectKey~null~propertyDefaultType~'string~propertyType~'string~filterOperator~'equals~filterValue~(~'placeholder)~limitValues~false~defaultEmpty~false~activeValue~(~'placeholder))~(resourceType~'event~propertyName~'!distinct_id~propertyObjectKey~null~propertyDefaultType~'string~propertyType~'string~filterOperator~'equals~filterValue~(~'placeholder1~'placeholder2~'placeholder3)~limitValues~false~defaultEmpty~false~activeValue~(~'placeholder1~'placeholder2~'placeholder3)))`;
+
+const idPlaceholderSearch = `~'placeholder1~'placeholder2~'placeholder3`;
+
+const makeReportUrl = (message: string, mixpanelIds: string[]): string => {
+  const baseUrl = 'https://mixpanel.com/project/2559783/view/3099527/app/boards#id=9957583&';
+  const searchParams = new URLSearchParams();
+
+  const idReplacement = `~'${mixpanelIds.join(`~'`)}`;
+  searchParams.set('filters', searchParamWithPlaceholder.replace('placeholder', message).replace(idPlaceholderSearch, idReplacement));
+
+  return `${baseUrl}?${searchParams.toString()}`;
+}

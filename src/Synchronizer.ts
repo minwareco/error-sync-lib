@@ -239,6 +239,7 @@ export class Synchronizer {
       priority: ErrorPriority.P5, // to be set later after aggregation is completed
       priorityReason: 'Unknown', // to be set later after aggregation is completed
       clientId,
+      mixpanelIds: error.mixpanelIds,
       count: error.count,
       countType: error.countType,
       countPeriodHours: error.countPeriodHours,
@@ -257,6 +258,7 @@ export class Synchronizer {
       // if we have already seen this error, tack it onto the existing group as another instance
       if (newErrorGroup.name === existingErrorGroup.name) {
         existingErrorGroup.instances.push(error);
+        existingErrorGroup.mixpanelIds = Array.from(new Set([...existingErrorGroup.mixpanelIds, ...error.mixpanelIds]));
         return;
       }
     }
