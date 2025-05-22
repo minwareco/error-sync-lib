@@ -91,9 +91,9 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
     // Ensure we have the appId to entityGuid mapping before proceeding
     await this.getAppIdToEntityGuidMap(hoursBack+1);
 
-    const fields = ['count(*)', 'max(appId)'];
+    const fields = ['count(*) as count', 'max(appId) as appId', 'uniques(mixpanelId) as mixpanelIds'];
     if (this.config.userIdField) {
-      fields.push(`uniqueCount(${this.config.userIdField})`);
+      fields.push(`uniqueCount(${this.config.userIdField}) as uniqueCount`);
     }
 
     const nrql = `
@@ -119,11 +119,46 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
 
         const errors = [];
 
+        /**
+         * A facet looks like this:
+         * The results are based on the selects in the NRQL query. But do not contain the alias   
+         * names. The code was making an assumption that the props on the results had unique names,
+         * which is not the case if the same function is used multiple times in the NRQL query.
+         * 
+         * {
+            "name": "Unexpected multiple total rows for same partition (Error Boundary)",
+            "results": [
+              {
+                "count": 13
+              },
+              {
+                "max": 594383106
+              },
+              {
+                "uniqueCount": 1
+              },
+              {
+                "members": [
+                  "3fee927c-5ca3-4726-bb07-e78869522987"
+                ]
+              }
+              ],
+              "beginTimeSeconds": 0,
+              "endTimeSeconds": 0
+            },
+         */
+
+        // Get the names of the results
+        const resultNames = body.metadata.contents.contents.reduce((acc, content, index) => {
+          acc[index] = content.alias;
+          return acc;
+        }, {} as Record<string, string>);
+
         body.facets.forEach((newRelicError) => {
-          newRelicError.results.forEach((row) => {
+          newRelicError.results.forEach((row, index) => {
             // convert each row into a property to produce a cleaner object that is easier to use
             for (const prop in row) {
-              newRelicError[prop] = row[prop];
+              newRelicError[resultNames[index]] = row[prop];
             }
 
             // determine other standard error properties from the native error
@@ -134,7 +169,7 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
           });
 
           // we need to map the appId to the entityGuid to produce a debug Url
-          const appId = newRelicError['max(appId)'];
+          const appId = newRelicError['appId'];
           const entityGuid = this.appIdToEntityGuid?.get(appId);
 
           // TODO: possibly fix this, but NewRelic does not have any documented way to produce a link which
