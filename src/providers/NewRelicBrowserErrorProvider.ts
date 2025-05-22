@@ -119,46 +119,11 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
 
         const errors = [];
 
-        /**
-         * A facet looks like this:
-         * The results are based on the selects in the NRQL query. But do not contain the alias   
-         * names. The code was making an assumption that the props on the results had unique names,
-         * which is not the case if the same function is used multiple times in the NRQL query.
-         * 
-         * {
-            "name": "Unexpected multiple total rows for same partition (Error Boundary)",
-            "results": [
-              {
-                "count": 13
-              },
-              {
-                "max": 594383106
-              },
-              {
-                "uniqueCount": 1
-              },
-              {
-                "members": [
-                  "3fee927c-5ca3-4726-bb07-e78869522987"
-                ]
-              }
-              ],
-              "beginTimeSeconds": 0,
-              "endTimeSeconds": 0
-            },
-         */
-
-        // Get the names of the results
-        const resultNames = body.metadata.contents.contents.reduce((acc, content, index) => {
-          acc[index] = content.alias;
-          return acc;
-        }, {} as Record<string, string>);
-
         body.facets.forEach((newRelicError) => {
           newRelicError.results.forEach((row, index) => {
             // convert each row into a property to produce a cleaner object that is easier to use
             for (const prop in row) {
-              newRelicError[resultNames[index]] = row[prop];
+              newRelicError[prop] = row[prop];
             }
 
             // determine other standard error properties from the native error

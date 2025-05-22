@@ -178,13 +178,27 @@ describe('NewRelicBrowserErrorProvider', () => {
       const mockErrorsResponse = {
         statusCode: 200,
         body: {
+          metadata: {
+            contents: {
+              contents: [
+                {
+                  alias: 'count'
+                },
+                {
+                  alias: 'appId',
+                },
+              ]
+            }
+          },
           facets: [
             {
               name: 'Test Error',
               results: [
                 {
-                  'count(*)': 10,
-                  'max(appId)': 123
+                  count: 10,
+                },
+                {
+                  appId: 123
                 }
               ]
             }
@@ -222,7 +236,7 @@ describe('NewRelicBrowserErrorProvider', () => {
       // Verify the errors are mapped correctly
       expect(errors).toHaveLength(1);
       expect(errors[0].type).toBe(ErrorType.BROWSER);
-      expect(errors[0]['count(*)']).toBe(10); // The count property from the response
+      expect(errors[0].count).toBe(10); // The count property from the response
       expect(errors[0].countType).toBe(ErrorCountType.TRX);
       expect(errors[0].countPeriodHours).toBe(24);
       
@@ -258,9 +272,13 @@ describe('NewRelicBrowserErrorProvider', () => {
               name: 'Test Error',
               results: [
                 {
-                  'count(*)': 10,
-                  'max(appId)': 123,
-                  'uniqueCount(userId)': 5
+                  count: 10,
+                },
+                {
+                  appId: 123,
+                },
+                {
+                  uniqueCount: 5
                 }
               ]
             }
