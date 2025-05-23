@@ -22,6 +22,7 @@ export declare type Error = {
     type: ErrorType;
     count: number;
     countType: ErrorCountType;
+    mixpanelIds?: string[];
     countPeriodHours: number;
     debugUrl?: string;
     debugMessage?: string;
@@ -36,6 +37,7 @@ export declare type ErrorGroup = {
     clientId: string;
     count: number;
     countType: ErrorCountType;
+    mixpanelIds?: string[];
     countPeriodHours: number;
     ticket: Ticket;
     alert: Alert;

@@ -12,6 +12,12 @@ export type NewRelicBrowserErrorProviderConfig = {
   userIdField?: string
 }
 
+const newrelicFunctionToResultMap = {
+  'count': 'count',
+  'max': 'max',
+  'uniques': 'members',
+  'uniqueCount': 'uniqueCount'
+}
 export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
   private config: NewRelicBrowserErrorProviderConfig;
   private appIdToEntityGuid: Map<number, string> | null = null;
@@ -91,9 +97,13 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
     // Ensure we have the appId to entityGuid mapping before proceeding
     await this.getAppIdToEntityGuidMap(hoursBack+1);
 
-    const fields = ['count(*)', 'max(appId)'];
+    const fields = [
+      'count(*) as count',
+      'max(appId) as appId',
+      'uniques(mixpanelId) as mixpanelIds',
+    ];
     if (this.config.userIdField) {
-      fields.push(`uniqueCount(${this.config.userIdField})`);
+      fields.push(`uniqueCount(${this.config.userIdField}) as uniqueCount`);
     }
 
     const nrql = `
@@ -119,12 +129,22 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
 
         const errors = [];
 
+        const resultIndexToNameMap = body.metadata.contents.contents.reduce((acc, curr, index) => {
+          acc[index] = curr.alias;
+          return acc;
+        }, {} as Record<number, string>);
+
+        const resultIndexToFunctionMap = body.metadata.contents.contents.reduce((acc, curr, index) => {
+          acc[index] = newrelicFunctionToResultMap[curr.contents.function];
+          return acc;
+        }, {} as Record<number, string>);
+
         body.facets.forEach((newRelicError) => {
-          newRelicError.results.forEach((row) => {
-            // convert each row into a property to produce a cleaner object that is easier to use
-            for (const prop in row) {
-              newRelicError[prop] = row[prop];
-            }
+          newRelicError.results.forEach((row, index) => {
+            // Add the alias names directly to the object. The names on the results are tied to 
+            // name of the function used to produce the result but is not always the same so
+            // always double check when making changes here.
+            newRelicError[resultIndexToNameMap[index]] = row[resultIndexToFunctionMap[index]];
 
             // determine other standard error properties from the native error
             newRelicError.type = ErrorType.BROWSER;
@@ -134,7 +154,7 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
           });
 
           // we need to map the appId to the entityGuid to produce a debug Url
-          const appId = newRelicError['max(appId)'];
+          const appId = newRelicError['appId'];
           const entityGuid = this.appIdToEntityGuid?.get(appId);
 
           // TODO: possibly fix this, but NewRelic does not have any documented way to produce a link which
