@@ -182,11 +182,23 @@ describe('NewRelicBrowserErrorProvider', () => {
             contents: {
               contents: [
                 {
-                  alias: 'count'
+                  alias: 'count',
+                  contents: {
+                    function: 'count'
+                  }
                 },
                 {
                   alias: 'appId',
+                  contents: {
+                    function: 'max'
+                  }
                 },
+                {
+                  alias: 'mixpanelIds',
+                  contents: {
+                    function: 'uniques'
+                  }
+                }
               ]
             }
           },
@@ -195,10 +207,13 @@ describe('NewRelicBrowserErrorProvider', () => {
               name: 'Test Error',
               results: [
                 {
-                  count: 10,
+                  count: 10
                 },
                 {
-                  appId: 123
+                  max: 123
+                },
+                {
+                  members: []
                 }
               ]
             }
@@ -267,15 +282,49 @@ describe('NewRelicBrowserErrorProvider', () => {
       const mockErrorsResponse = {
         statusCode: 200,
         body: {
+          metadata: {
+            contents: {
+              contents: [
+                {
+                  alias: 'count',
+                  contents: {
+                    function: 'count'
+                  }
+                },
+                {
+                  alias: 'appId',
+                  contents: {
+                    function: 'max'
+                  }
+                },
+                {
+                  alias: 'mixpanelIds',
+                  contents: {
+                    function: 'uniques'
+                  }
+                },
+                {
+                  alias: 'uniqueCount',
+                  contents: {
+                    function: 'uniqueCount'
+                  }
+                }
+              ]
+            }
+          },
           facets: [
             {
               name: 'Test Error',
+              uniqueCount: 5,
               results: [
                 {
-                  count: 10,
+                  count: 10
                 },
                 {
-                  appId: 123,
+                  max: 123
+                },
+                {
+                  members: []
                 },
                 {
                   uniqueCount: 5
@@ -286,7 +335,7 @@ describe('NewRelicBrowserErrorProvider', () => {
         }
       };
 
-      // Setup the mock implementation
+      // Setup the mock implementation - using a single implementation
       (newrelicApi.insights.query as jest.Mock).mockImplementation(
         (nrql, appConfigId, callback) => {
           // Check which query is being made
@@ -306,31 +355,12 @@ describe('NewRelicBrowserErrorProvider', () => {
       // Mock the appIdToEntityGuid map
       (provider as any).appIdToEntityGuid = new Map([[123, 'guid-123']]);
       
-      // Manually set the uniqueCount property to simulate the provider's behavior
-      const mockUniqueCount = 5;
-      
-      // Override the insights.query implementation to set uniqueCount
-      (newrelicApi.insights.query as jest.Mock).mockImplementation(
-        (nrql, appConfigId, callback) => {
-          if (nrql.includes('uniques(entityGuid') && nrql.includes('uniques(appId')) {
-            callback(null, mockMapResponse, mockMapResponse.body);
-          } else if (nrql.includes('FROM JavaScriptError')) {
-            // Create a modified response with uniqueCount
-            const modifiedResponse = JSON.parse(JSON.stringify(mockErrorsResponse));
-            // Add the uniqueCount property that the implementation expects
-            modifiedResponse.body.facets[0].uniqueCount = mockUniqueCount;
-            callback(null, modifiedResponse, modifiedResponse.body);
-          }
-        }
-      );
-      
       // Call getErrors
       const errors = await provider.getErrors();
       
       // Verify the errors are mapped correctly with user count
       expect(errors).toHaveLength(1);
-      expect(errors[0]['uniqueCount(userId)']).toBe(5); // The uniqueCount property from the response
-      expect((errors[0] as any).uniqueCount).toBe(5); // The uniqueCount property that the implementation uses
+      expect((errors[0] as any).uniqueCount).toBe(5); // The uniqueCount property from the facet object
       expect(errors[0].countType).toBe(ErrorCountType.USERS);
     });
   });
