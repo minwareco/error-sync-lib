@@ -1,5 +1,6 @@
 import { TicketProviderInterface } from '../interfaces';
 import { ErrorGroup, ErrorPriority, Ticket, TicketContent } from '../models';
+import JSURL from 'jsurl';
 import JiraApi from 'jira-client';
 
 export type JiraBasicAuthConfig = {
@@ -226,16 +227,41 @@ export class JiraTicketProvider implements TicketProviderInterface {
   }
 }
 
-const searchParamWithPlaceholder = `~(~(resourceType~'event~propertyName~'message~propertyObjectKey~null~propertyDefaultType~'string~propertyType~'string~filterOperator~'equals~filterValue~(~'placeholder)~limitValues~false~defaultEmpty~false~activeValue~(~'placeholder))~(resourceType~'event~propertyName~'!distinct_id~propertyObjectKey~null~propertyDefaultType~'string~propertyType~'string~filterOperator~'equals~filterValue~(~'placeholder1~'placeholder2~'placeholder3)~limitValues~false~defaultEmpty~false~activeValue~(~'placeholder1~'placeholder2~'placeholder3)))`;
-
-const idPlaceholderSearch = `~'placeholder1~'placeholder2~'placeholder3`;
 
 const makeReportUrl = (message: string, mixpanelIds: string[]): string => {
   const baseUrl = 'https://mixpanel.com/project/2559783/view/3099527/app/boards#id=9957583&';
+  
   const searchParams = new URLSearchParams();
+  const filterSettings = [
+    {
+      resourceType: 'event',
+      propertyName: 'message',
+      propertyObjectKey: null,
+      propertyDefaultType: 'string',
+      propertyType: 'string',
+      filterOperator: 'contains',
+      filterValue: [ message ],
+      limitValues: false,
+      defaultEmpty: false,
+      activeValue: [ message ]
+    },
+    {
+      resourceType: 'event',
+      propertyName: '$distinct_id',
+      propertyObjectKey: null,
+      propertyDefaultType: 'string',
+      propertyType: 'string',
+      filterOperator: 'equals',
+      filterValue: mixpanelIds,
+      limitValues: false,
+      defaultEmpty: false,
+      activeValue: mixpanelIds
+    }
+  ]
 
-  const idReplacement = `~'${mixpanelIds.join(`~'`)}`;
-  searchParams.set('filters', searchParamWithPlaceholder.replace('placeholder', message).replace(idPlaceholderSearch, idReplacement));
+  const settings = JSURL.stringify(filterSettings);  
+
+  searchParams.set('filters', settings);
 
   return `${baseUrl}?${searchParams.toString()}`;
 }
