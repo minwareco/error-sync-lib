@@ -201,7 +201,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
 
 
     // Add a message with a link the mixpanel events page and then
-    if (errorGroup.mixpanelIds) {
+    if (errorGroup.mixpanelIds.length > 0) {
       description += `\n\n[Mixpanel Events](${makeReportUrl(errorGroup.instances[0].name.substring(0, 100).trim(), errorGroup.mixpanelIds)})`;
     }
 
@@ -230,7 +230,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
 
 const makeReportUrl = (message: string, mixpanelIds: string[]): string => {
   const baseUrl = 'https://mixpanel.com/project/2559783/view/3099527/app/boards#id=9957583&';
-  
+
   const searchParams = new URLSearchParams();
   const filterSettings = [
     {
@@ -240,10 +240,10 @@ const makeReportUrl = (message: string, mixpanelIds: string[]): string => {
       propertyDefaultType: 'string',
       propertyType: 'string',
       filterOperator: 'contains',
-      filterValue: [ message ],
+      filterValue: message,
       limitValues: false,
       defaultEmpty: false,
-      activeValue: [ message ]
+      activeValue: message
     },
     {
       resourceType: 'event',
@@ -260,8 +260,7 @@ const makeReportUrl = (message: string, mixpanelIds: string[]): string => {
   ]
 
   const settings = JSURL.stringify(filterSettings);  
-
   searchParams.set('filters', settings);
 
-  return `${baseUrl}?${searchParams.toString()}`;
+  return `${baseUrl}${searchParams.toString()}`;
 }
