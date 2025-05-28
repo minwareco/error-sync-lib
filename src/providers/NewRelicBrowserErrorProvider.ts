@@ -96,7 +96,7 @@ export class NewRelicBrowserErrorProvider implements ErrorProviderInterface {
   public async getErrors(hoursBack = 24, limit = 1000): Promise<Error[]> {
     // Ensure we have the appId to entityGuid mapping before proceeding
     await this.getAppIdToEntityGuidMap(hoursBack+1);
-
+    // The aliases are required to be used in the results.
     const fields = [
       'count(*) as count',
       'max(appId) as appId',
