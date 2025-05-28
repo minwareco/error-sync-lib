@@ -26,9 +26,10 @@ export class NewRelicServerErrorProvider implements ErrorProviderInterface {
   }
 
   public async getErrors(hoursBack= 24, limit = 1000): Promise<Error[]> {
-    const fields = ['count(*)', 'max(appId)'];
+    // The aliases are required to be used in the results.
+    const fields = ['count(*) as count', 'max(appId) as max'];
     if (this.config.userIdField) {
-      fields.push(`uniqueCount(${this.config.userIdField})`);
+      fields.push(`uniqueCount(${this.config.userIdField}) as uniqueCount`);
     }
 
     const nrql = `
