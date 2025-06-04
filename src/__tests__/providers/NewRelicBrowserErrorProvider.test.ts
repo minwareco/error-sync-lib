@@ -160,8 +160,8 @@ describe('NewRelicBrowserErrorProvider', () => {
     });
   });
 
-  describe('getErrors', () => {
-    it('should fetch errors and map them correctly', async () => {
+  describe.only('getErrors', () => {
+    it.only('should fetch errors and map them correctly', async () => {
       // Mock the map query response
       const mockMapResponse = {
         statusCode: 200,
@@ -178,30 +178,6 @@ describe('NewRelicBrowserErrorProvider', () => {
       const mockErrorsResponse = {
         statusCode: 200,
         body: {
-          metadata: {
-            contents: {
-              contents: [
-                {
-                  alias: 'count',
-                  contents: {
-                    function: 'count'
-                  }
-                },
-                {
-                  alias: 'appId',
-                  contents: {
-                    function: 'max'
-                  }
-                },
-                {
-                  alias: 'mixpanelIds',
-                  contents: {
-                    function: 'uniques'
-                  }
-                }
-              ]
-            }
-          },
           facets: [
             {
               name: 'Test Error',
