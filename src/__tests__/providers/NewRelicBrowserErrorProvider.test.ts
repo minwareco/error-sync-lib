@@ -22,158 +22,25 @@ describe('NewRelicBrowserErrorProvider', () => {
     jest.clearAllMocks();
   });
 
-  describe('getAppIdToEntityGuidMap', () => {
-    it('should fetch and cache the appId to entityGuid map', async () => {
-      // Mock the newrelic API response for the map query
-      const mockMapResponse = {
-        statusCode: 200,
-        body: {
-          results: [{
-            events: [
-              { appId: 123, entityGuid: 'guid-123' },
-              { appId: 456, entityGuid: 'guid-456' }
-            ]
-          }]
-        }
+  describe('constructor', () => {
+    it('should create instance with basic config', () => {
+      const provider = new NewRelicBrowserErrorProvider(config);
+      expect(provider).toBeInstanceOf(NewRelicBrowserErrorProvider);
+    });
+
+    it('should handle excludedeHosts typo for backward compatibility', () => {
+      const configWithTypo = {
+        ...config,
+        excludedeHosts: ['bot.example.com'] as [string]
       };
-
-      // Setup the mock implementation
-      (newrelicApi.insights.query as jest.Mock).mockImplementation(
-        (nrql, appConfigId, callback) => {
-          // Check if this is the map query
-          if (nrql.includes('uniques(entityGuid') && nrql.includes('uniques(appId')) {
-            callback(null, mockMapResponse, mockMapResponse.body);
-          }
-        }
-      );
-
-      // Create provider instance
-      const provider = new NewRelicBrowserErrorProvider(config);
       
-      // Access the private method using type assertion
-      const getMapMethod = (provider as any).getAppIdToEntityGuidMap.bind(provider);
-      
-      // Call the method
-      const map1 = await getMapMethod();
-      
-      // Verify the map contains the expected entries
-      expect(map1.get(123)).toBe('guid-123');
-      expect(map1.get(456)).toBe('guid-456');
-      
-      // Verify the API was called once
-      expect(newrelicApi.insights.query).toHaveBeenCalledTimes(1);
-      
-      // Call the method again - should use cached result
-      const map2 = await getMapMethod();
-      
-      // Verify the API was still only called once (using cache)
-      expect(newrelicApi.insights.query).toHaveBeenCalledTimes(1);
-      
-      // Verify the maps are the same instance
-      expect(map2).toBe(map1);
-    });
-
-    it('should handle API errors when fetching the map', async () => {
-      // Mock the newrelic API to return an error
-      (newrelicApi.insights.query as jest.Mock).mockImplementation(
-        (nrql, appConfigId, callback) => {
-          callback(new Error('API Error'), null, null);
-        }
-      );
-
-      // Create provider instance
-      const provider = new NewRelicBrowserErrorProvider(config);
-      
-      // Access the private method using type assertion
-      const getMapMethod = (provider as any).getAppIdToEntityGuidMap.bind(provider);
-      
-      // Call the method and expect it to throw
-      await expect(getMapMethod()).rejects.toThrow('API Error');
-      
-      // Verify the API was called
-      expect(newrelicApi.insights.query).toHaveBeenCalledTimes(1);
-      
-      // Mock a successful response for the next call
-      (newrelicApi.insights.query as jest.Mock).mockImplementation(
-        (nrql, appConfigId, callback) => {
-          callback(null, { statusCode: 200, body: { results: [{ events: [] }] } }, { results: [{ events: [] }] });
-        }
-      );
-      
-      // Call the method again - should retry since previous call failed
-      await getMapMethod();
-      
-      // Verify the API was called again
-      expect(newrelicApi.insights.query).toHaveBeenCalledTimes(2);
-    });
-
-    it('should reuse in-progress promise when multiple calls are made', async () => {
-      // Create a delayed mock response
-      let resolvePromise: (value: void) => void;
-      const delayPromise = new Promise<void>((resolve) => {
-        resolvePromise = resolve;
-      });
-
-      // Mock the newrelic API with a delayed response
-      (newrelicApi.insights.query as jest.Mock).mockImplementation(
-        (nrql, appConfigId, callback) => {
-          // Wait for the promise to resolve before calling back
-          delayPromise.then(() => {
-            callback(null, {
-              statusCode: 200,
-              body: {
-                results: [{
-                  events: [{ appId: 123, entityGuid: 'guid-123' }]
-                }]
-              }
-            }, {
-              results: [{
-                events: [{ appId: 123, entityGuid: 'guid-123' }]
-              }]
-            });
-          });
-        }
-      );
-
-      // Create provider instance
-      const provider = new NewRelicBrowserErrorProvider(config);
-      
-      // Access the private method using type assertion
-      const getMapMethod = (provider as any).getAppIdToEntityGuidMap.bind(provider);
-      
-      // Start two concurrent calls
-      const promise1 = getMapMethod();
-      const promise2 = getMapMethod();
-      
-      // Resolve the delay
-      resolvePromise();
-      
-      // Wait for both promises
-      const [map1, map2] = await Promise.all([promise1, promise2]);
-      
-      // Verify the API was only called once
-      expect(newrelicApi.insights.query).toHaveBeenCalledTimes(1);
-      
-      // Verify both calls returned the same map
-      expect(map1).toBe(map2);
-      expect(map1.get(123)).toBe('guid-123');
+      const provider = new NewRelicBrowserErrorProvider(configWithTypo);
+      expect(provider).toBeInstanceOf(NewRelicBrowserErrorProvider);
     });
   });
 
-  describe.only('getErrors', () => {
-    it.only('should fetch errors and map them correctly', async () => {
-      // Mock the map query response
-      const mockMapResponse = {
-        statusCode: 200,
-        body: {
-          results: [{
-            events: [
-              { appId: 123, entityGuid: 'guid-123' }
-            ]
-          }]
-        }
-      };
-
+  describe('getErrors', () => {
+    it('should fetch errors and map them correctly', async () => {
       // Mock the errors query response
       const mockErrorsResponse = {
         statusCode: 200,
@@ -189,7 +56,10 @@ describe('NewRelicBrowserErrorProvider', () => {
                   max: 123
                 },
                 {
-                  members: []
+                  members: ['guid-123']
+                },
+                {
+                  members: ['mixpanel-123']
                 }
               ]
             }
@@ -200,26 +70,12 @@ describe('NewRelicBrowserErrorProvider', () => {
       // Setup the mock implementation
       (newrelicApi.insights.query as jest.Mock).mockImplementation(
         (nrql, appConfigId, callback) => {
-          // Check which query is being made
-          if (nrql.includes('uniques(entityGuid') && nrql.includes('uniques(appId')) {
-            callback(null, mockMapResponse, mockMapResponse.body);
-          } else if (nrql.includes('FROM JavaScriptError')) {
-            callback(null, mockErrorsResponse, mockErrorsResponse.body);
-          }
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
         }
       );
 
       // Create provider instance
       const provider = new NewRelicBrowserErrorProvider(config);
-      
-      // Create a map with the test data
-      const mockMap = new Map([[123, 'guid-123']]);
-      
-      // Mock the getAppIdToEntityGuidMap method to return our mock map
-      jest.spyOn(provider as any, 'getAppIdToEntityGuidMap').mockResolvedValue(mockMap);
-      
-      // Also set the map directly to ensure it's available
-      (provider as any).appIdToEntityGuid = mockMap;
       
       // Call getErrors
       const errors = await provider.getErrors(24, 100);
@@ -242,52 +98,10 @@ describe('NewRelicBrowserErrorProvider', () => {
         userIdField: 'userId'
       };
 
-      // Mock the map query response
-      const mockMapResponse = {
-        statusCode: 200,
-        body: {
-          results: [{
-            events: [
-              { appId: 123, entityGuid: 'guid-123' }
-            ]
-          }]
-        }
-      };
-
       // Mock the errors query response with user count
       const mockErrorsResponse = {
         statusCode: 200,
         body: {
-          metadata: {
-            contents: {
-              contents: [
-                {
-                  alias: 'count',
-                  contents: {
-                    function: 'count'
-                  }
-                },
-                {
-                  alias: 'appId',
-                  contents: {
-                    function: 'max'
-                  }
-                },
-                {
-                  alias: 'mixpanelIds',
-                  contents: {
-                    function: 'uniques'
-                  }
-                },
-                {
-                  alias: 'uniqueCount',
-                  contents: {
-                    function: 'uniqueCount'
-                  }
-                }
-              ]
-            }
-          },
           facets: [
             {
               name: 'Test Error',
@@ -300,7 +114,10 @@ describe('NewRelicBrowserErrorProvider', () => {
                   max: 123
                 },
                 {
-                  members: []
+                  members: ['guid-123']
+                },
+                {
+                  members: ['mixpanel-123']
                 },
                 {
                   uniqueCount: 5
@@ -314,22 +131,13 @@ describe('NewRelicBrowserErrorProvider', () => {
       // Setup the mock implementation - using a single implementation
       (newrelicApi.insights.query as jest.Mock).mockImplementation(
         (nrql, appConfigId, callback) => {
-          // Check which query is being made
-          if (nrql.includes('uniques(entityGuid') && nrql.includes('uniques(appId')) {
-            callback(null, mockMapResponse, mockMapResponse.body);
-          } else if (nrql.includes('FROM JavaScriptError')) {
-            // Verify that the userIdField is included in the query
-            expect(nrql).toContain('uniqueCount(userId)');
-            callback(null, mockErrorsResponse, mockErrorsResponse.body);
-          }
+          expect(nrql).toContain('uniqueCount(userId)');
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
         }
       );
 
       // Create provider instance
       const provider = new NewRelicBrowserErrorProvider(configWithUserId);
-      
-      // Mock the appIdToEntityGuid map
-      (provider as any).appIdToEntityGuid = new Map([[123, 'guid-123']]);
       
       // Call getErrors
       const errors = await provider.getErrors();
@@ -338,6 +146,332 @@ describe('NewRelicBrowserErrorProvider', () => {
       expect(errors).toHaveLength(1);
       expect((errors[0] as any).uniqueCount).toBe(5); // The uniqueCount property from the facet object
       expect(errors[0].countType).toBe(ErrorCountType.USERS);
+    });
+
+    it('should use default parameters when none provided', async () => {
+      const mockErrorsResponse = {
+        statusCode: 200,
+        body: { facets: [] }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          // Verify default values are used in the query
+          expect(nrql).toContain('SINCE 24 hours ago');
+          expect(nrql).toContain('LIMIT 1000');
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(config);
+      const errors = await provider.getErrors();
+      
+      expect(errors).toEqual([]);
+    });
+
+    it('should handle custom time period and limit', async () => {
+      const mockErrorsResponse = {
+        statusCode: 200,
+        body: { facets: [] }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          expect(nrql).toContain('SINCE 48 hours ago');
+          expect(nrql).toContain('LIMIT 500');
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(config);
+      await provider.getErrors(48, 500);
+    });
+
+    it('should construct correct NRQL query for browser errors', async () => {
+      const mockErrorsResponse = {
+        statusCode: 200,
+        body: { facets: [] }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          // Verify browser-specific query structure
+          expect(nrql).toContain('FROM JavaScriptError');
+          expect(nrql).toContain('FACET `errorMessage`');
+          expect(nrql).toContain('uniques(mixpanelId)');
+          expect(nrql).toContain('uniques(entityGuid)');
+          expect(nrql).not.toContain('User-Agent'); // Browser errors don't filter by User-Agent
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(config);
+      await provider.getErrors();
+    });
+
+    it('should handle multiple errors in response', async () => {
+      const mockErrorsResponse = {
+        statusCode: 200,
+        body: {
+          facets: [
+            {
+              name: 'Error 1',
+              results: [
+                { count: 5 },
+                { max: 111 },
+                { members: ['guid-111'] },
+                { members: ['mixpanel-111'] }
+              ]
+            },
+            {
+              name: 'Error 2',
+              results: [
+                { count: 15 },
+                { max: 222 },
+                { members: ['guid-222'] },
+                { members: ['mixpanel-222'] }
+              ]
+            }
+          ]
+        }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(config);
+      const errors = await provider.getErrors();
+      
+      expect(errors).toHaveLength(2);
+      expect(errors[0].name).toBe('Error 1');
+      expect(errors[0].count).toBe(5);
+      expect(errors[1].name).toBe('Error 2');
+      expect(errors[1].count).toBe(15);
+    });
+
+    it('should handle empty response', async () => {
+      const mockErrorsResponse = {
+        statusCode: 200,
+        body: { facets: [] }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(config);
+      const errors = await provider.getErrors();
+      
+      expect(errors).toEqual([]);
+    });
+
+    it('should handle server errors (status > 500) by returning empty array', async () => {
+      const mockErrorsResponse = {
+        statusCode: 503,
+        body: { error: 'Service Unavailable' }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(config);
+      const errors = await provider.getErrors();
+      
+      expect(errors).toEqual([]);
+    });
+
+    it('should reject on API errors', async () => {
+      const apiError = new Error('API Error');
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          callback(apiError, null, null);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(config);
+      
+      await expect(provider.getErrors()).rejects.toThrow('API Error');
+    });
+
+    it('should reject on response body errors', async () => {
+      const mockErrorsResponse = {
+        statusCode: 200,
+        body: { error: 'Invalid query' }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(config);
+      
+      await expect(provider.getErrors()).rejects.toBe('Invalid query');
+    });
+
+    it('should reject on non-200 status codes (excluding server errors)', async () => {
+      const mockErrorsResponse = {
+        statusCode: 400,
+        body: { message: 'Bad Request' }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(config);
+      
+      await expect(provider.getErrors()).rejects.toEqual({ message: 'Bad Request' });
+    });
+
+    it('should set correct debug URL for browser errors', async () => {
+      const mockErrorsResponse = {
+        statusCode: 200,
+        body: {
+          facets: [
+            {
+              name: 'Test Error',
+              results: [
+                { count: 10 },
+                { max: 123 },
+                { members: ['test-entity-guid'] },
+                { members: ['mixpanel-123'] }
+              ]
+            }
+          ]
+        }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(config);
+      const errors = await provider.getErrors();
+      
+      expect(errors[0].debugUrl).toContain('one.newrelic.com');
+      expect(errors[0].debugUrl).toContain('test-entity-guid');
+      expect(errors[0].debugUrl).toContain('duration=86400000'); // 24 hours in ms
+    });
+
+    it('should handle missing mixpanelIds gracefully', async () => {
+      const mockErrorsResponse = {
+        statusCode: 200,
+        body: {
+          facets: [
+            {
+              name: 'Test Error',
+              results: [
+                { count: 10 },
+                { max: 123 },
+                { members: ['guid-123'] },
+                { members: [] } // Empty mixpanel IDs
+              ]
+            }
+          ]
+        }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(config);
+      const errors = await provider.getErrors();
+      
+      expect(errors[0].mixpanelIds).toEqual([]);
+    });
+
+    it('should prioritize uniqueCount over count when available', async () => {
+      const configWithUserId = {
+        ...config,
+        userIdField: 'userId'
+      };
+
+      const mockErrorsResponse = {
+        statusCode: 200,
+        body: {
+          facets: [
+            {
+              name: 'Test Error',
+              results: [
+                { count: 100 },
+                { max: 123 },
+                { members: ['guid-123'] },
+                { members: ['mixpanel-123'] },
+                { uniqueCount: 25 }
+              ]
+            }
+          ]
+        }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(configWithUserId);
+      const errors = await provider.getErrors();
+      
+      // Should use uniqueCount (25) instead of count (100)
+      expect(errors[0].count).toBe(25);
+      expect(errors[0].countType).toBe(ErrorCountType.USERS);
+    });
+
+    it('should use transaction count when uniqueCount is 0', async () => {
+      const configWithUserId = {
+        ...config,
+        userIdField: 'userId'
+      };
+
+      const mockErrorsResponse = {
+        statusCode: 200,
+        body: {
+          facets: [
+            {
+              name: 'Test Error',
+              results: [
+                { count: 50 },
+                { max: 123 },
+                { members: ['guid-123'] },
+                { members: ['mixpanel-123'] },
+                { uniqueCount: 0 }
+              ]
+            }
+          ]
+        }
+      };
+
+      (newrelicApi.insights.query as jest.Mock).mockImplementation(
+        (nrql, appConfigId, callback) => {
+          callback(null, mockErrorsResponse, mockErrorsResponse.body);
+        }
+      );
+
+      const provider = new NewRelicBrowserErrorProvider(configWithUserId);
+      const errors = await provider.getErrors();
+      
+      // Should fall back to transaction count (50) when uniqueCount is 0
+      expect(errors[0].count).toBe(50);
+      expect(errors[0].countType).toBe(ErrorCountType.TRX);
     });
   });
 }); 

@@ -43,7 +43,12 @@ const fieldConfiguration: Record<string, FieldConfiguration> = {
   appId: {
     name: 'appId',
     nrql: 'max(appId)',
-    resultProperty: 'appId',
+    resultProperty: 'max',
+  },
+  entityGuid: {
+    name: 'entityGuid',
+    nrql: 'uniques(entityGuid)',
+    resultProperty: 'members',
   },
 }
 
@@ -74,77 +79,9 @@ const tableConfiguration: Record<NewRelicErrorProviderType, TableConfiguration> 
 
 export class NewRelicErrorProvider implements ErrorProviderInterface {
   private config: NewRelicErrorProviderConfig;
-  private appIdToEntityGuid: Map<number, string> | null = null;
-  private appIdToEntityGuidPromise: Promise<Map<number, string>> | null = null;
 
   public constructor(config: NewRelicErrorProviderConfig) {
     this.config = config;
-  }
-
-  /**
-   * Gets the mapping of appId to entityGuid with instance-level caching
-   * Only used for browser errors
-   */
-  private async getAppIdToEntityGuidMap(hoursBack = 25): Promise<Map<number, string>> {
-    // Only needed for browser errors
-    if (this.config.type !== NewRelicErrorProviderType.BROWSER) {
-      return new Map();
-    }
-
-    // Return cached map if available
-    if (this.appIdToEntityGuid) {
-      return this.appIdToEntityGuid;
-    }
-
-    // Return in-progress promise if one exists
-    if (this.appIdToEntityGuidPromise) {
-      return this.appIdToEntityGuidPromise;
-    }
-
-    // Create and cache the promise
-    this.appIdToEntityGuidPromise = this.fetchAppIdToEntityGuidMap(hoursBack);
-    
-    try {
-      // Wait for the promise to resolve and cache the result
-      const map = await this.appIdToEntityGuidPromise;
-      this.appIdToEntityGuid = map;
-      return map;
-    } catch (error) {
-      // Clear the promise cache on error so we can retry
-      this.appIdToEntityGuidPromise = null;
-      throw error;
-    }
-  }
-
-  private async fetchAppIdToEntityGuidMap(hoursBack = 25): Promise<Map<number, string>> {
-    const nrql = `SELECT uniques(entityGuid, 1000), uniques(appId, 1000) FROM JavaScriptError SINCE ${hoursBack} hours ago UNTIL now`;
-
-    return new Promise((resolve, reject) => {
-      newrelicApi.insights.query(nrql, this.config.appConfigId, (error, response, body) => {
-        if (error) {
-          return reject(error);
-        } else if (response.statusCode !== 200) {
-          return reject(response.body);
-        } else if (response.statusCode > 500) {
-          return resolve(new Map());
-        } else if (response.body?.error) {
-          return reject(response.body.error);
-        }
-
-        const map = new Map<number, string>();
-
-        if (Array.isArray(body.results) && body.results.length > 0) {
-          const events = body.results[0]?.events || [];
-          events.forEach(event => {
-            if (event.entityGuid && event.appId) {
-              map.set(event.appId, event.entityGuid);
-            }
-          });
-        }
-
-        resolve(map);
-      });
-    });
   }
 
   private buildDebugUrl(appId: number, errorName: string, entityGuid?: string): string {
@@ -165,14 +102,12 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
 
   public async getErrors(hoursBack = 24, limit = 1000): Promise<Error[]> {
     const tableConfig = tableConfiguration[this.config.type];
-    
-    // Ensure we have the appId to entityGuid mapping for browser errors
-    await this.getAppIdToEntityGuidMap(hoursBack + 1);
 
     // Build the field list based on configuration
     const fields = [
       fieldConfiguration.count,
       fieldConfiguration.appId,
+      fieldConfiguration.entityGuid,
     ];
 
     if (tableConfig.includeMixpanelIds) {
@@ -204,12 +139,12 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
       newrelicApi.insights.query(nrql, this.config.appConfigId, (error, response, body) => {
         if (error) {
           return reject(error);
-        } else if (response.statusCode != 200) {
-          return reject(response.body);
         } else if (response.statusCode > 500) {
           return resolve([]);
         } else if (response.body.error) {
           return reject(response.body.error);
+        } else if (response.statusCode != 200) {
+          return reject(response.body);
         }
 
         const errors = [];
@@ -231,8 +166,7 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
 
           // Generate debug URL
           const appId = newRelicError.appId;
-          const entityGuid = this.appIdToEntityGuid?.get(appId);
-          newRelicError.debugUrl = this.buildDebugUrl(appId, newRelicError.name, entityGuid);
+          newRelicError.debugUrl = this.buildDebugUrl(appId, newRelicError.name, newRelicError.entityGuid[0]);
 
           errors.push(newRelicError);
         });
