@@ -85,6 +85,8 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
   }
 
   private buildDebugUrl(appId: number, errorName: string, entityGuid?: string): string {
+    // Browser errors
+    const hoursInMs = 24 * 3600000; // Default to 24 hours
     if (this.config.type === NewRelicErrorProviderType.SERVER) {
       const filters = [{
         key: 'error.message',
@@ -92,10 +94,8 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
         like: false
       }];
       const encodedFilters = encodeURIComponent(JSON.stringify(filters));
-      return `https://rpm.newrelic.com/accounts/${this.config.accountId}/applications/${appId}/filterable_errors#/table?top_facet=transactionUiName&primary_facet=error.class&barchart=barchart&filters=${encodedFilters}`;
+      return `https://rpm.newrelic.com/accounts/${this.config.accountId}/applications/${appId}/filterable_errors#/table?top_facet=transactionUiName&primary_facet=error.class&barchart=barchart&filters=${encodedFilters}&duration=${hoursInMs}`;
     } else {
-      // Browser errors
-      const hoursInMs = 24 * 3600000; // Default to 24 hours
       return `https://one.newrelic.com/nr1-core/errors-inbox/entity-inbox/${entityGuid}?duration=${hoursInMs}`;
     }
   }
