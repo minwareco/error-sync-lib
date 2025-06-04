@@ -42,7 +42,7 @@ export type ErrorGroup = {
   clientId: string,
   count: number,
   countType: ErrorCountType,
-  mixpanelIds?: string[],
+  mixpanelIds: string[],
   countPeriodHours: number,
   ticket: Ticket,
   alert: Alert,
