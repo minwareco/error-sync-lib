@@ -88,16 +88,16 @@ export class Synchronizer {
     }
 
     // persist all cached data changes
-    // try {
-    //   await this.config.cacheProvider.saveAllCaches();
-    // } catch (e) {
-    //   finalResult.exitCode = 3;
-    //   finalResult.errors.push({
-    //     message: e.message || e,
-    //   });
+    try {
+      await this.config.cacheProvider.saveAllCaches();
+    } catch (e) {
+      finalResult.exitCode = 3;
+      finalResult.errors.push({
+        message: e.message || e,
+      });
 
-    //   console.error('An unexpected exception occurred while running the error synchronizations', e);
-    // }
+      console.error('An unexpected exception occurred while running the error synchronizations', e);
+    }
 
     if (finalResult.errors.length > 0) {
       console.error('Some errors were not synchronized to the ticketing and/or alerting system. Please see errors above.');
@@ -140,8 +140,8 @@ export class Synchronizer {
     errorGroup.priorityReason = priorityReason;
 
     // read any cached version of the ticket and alert
-    // errorGroup.ticket = await this.config.cacheProvider.getObject(errorGroup.clientId, CacheName.Tickets);
-    // errorGroup.alert = await this.config.cacheProvider.getObject(errorGroup.clientId, CacheName.Alerts);
+    errorGroup.ticket = await this.config.cacheProvider.getObject(errorGroup.clientId, CacheName.Tickets);
+    errorGroup.alert = await this.config.cacheProvider.getObject(errorGroup.clientId, CacheName.Alerts);
 
     // if our ticket cache does not know about the error, then we search in the source-of-truth
     // ticketing system. if it is not there either, then we will end up creating a new ticket.
@@ -177,7 +177,7 @@ export class Synchronizer {
       isTicketReopened = true;
     }
 
-    // await this.config.cacheProvider.setObject(errorGroup.clientId, errorGroup.ticket, CacheName.Tickets, false);
+    await this.config.cacheProvider.setObject(errorGroup.clientId, errorGroup.ticket, CacheName.Tickets, false);
 
     // if our alert cache does not know about the error, then we search in the source-of-truth
     // alert system. if it is not there either, then we will end up creating a new alert.
@@ -211,7 +211,7 @@ export class Synchronizer {
       await this.config.alertProvider.updateAlert(errorGroup.alert);
     }
 
-    // await this.config.cacheProvider.setObject(errorGroup.clientId, errorGroup.alert, CacheName.Alerts, false);
+    await this.config.cacheProvider.setObject(errorGroup.clientId, errorGroup.alert, CacheName.Alerts, false);
   }
 
   private createErrorGroup(error: Error, sourceName: string): ErrorGroup {
@@ -239,7 +239,7 @@ export class Synchronizer {
       priority: ErrorPriority.P5, // to be set later after aggregation is completed
       priorityReason: 'Unknown', // to be set later after aggregation is completed
       clientId,
-      mixpanelIds: error.mixpanelIds,
+      mixpanelIds: error.mixpanelIds ?? [],
       count: error.count,
       countType: error.countType,
       countPeriodHours: error.countPeriodHours,
@@ -258,7 +258,7 @@ export class Synchronizer {
       // if we have already seen this error, tack it onto the existing group as another instance
       if (newErrorGroup.name === existingErrorGroup.name) {
         existingErrorGroup.instances.push(error);
-        existingErrorGroup.mixpanelIds = Array.from(new Set([...existingErrorGroup.mixpanelIds, ...error.mixpanelIds]));
+        existingErrorGroup.mixpanelIds = Array.from(new Set([...existingErrorGroup.mixpanelIds, ...(error.mixpanelIds ?? [])]));
         return;
       }
     }
