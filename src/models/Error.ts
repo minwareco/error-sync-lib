@@ -27,6 +27,7 @@ export type Error = {
   count: number,
   countType: ErrorCountType,
   mixpanelIds?: string[],
+  userEmails?: string[],
   countPeriodHours: number,
   debugUrl?: string,
   debugMessage?: string,
@@ -47,4 +48,5 @@ export type ErrorGroup = {
   ticket: Ticket,
   alert: Alert,
   instances: Error[],
+  userEmails: string[],
 };

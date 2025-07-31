@@ -240,6 +240,7 @@ export class Synchronizer {
       priorityReason: 'Unknown', // to be set later after aggregation is completed
       clientId,
       mixpanelIds: error.mixpanelIds ?? [],
+      userEmails: error.userEmails ?? [],
       count: error.count,
       countType: error.countType,
       countPeriodHours: error.countPeriodHours,
@@ -259,6 +260,7 @@ export class Synchronizer {
       if (newErrorGroup.name === existingErrorGroup.name) {
         existingErrorGroup.instances.push(error);
         existingErrorGroup.mixpanelIds = Array.from(new Set([...existingErrorGroup.mixpanelIds, ...(error.mixpanelIds ?? [])]));
+        existingErrorGroup.userEmails = Array.from(new Set([...existingErrorGroup.userEmails, ...(error.userEmails ?? [])]));
         return;
       }
     }
