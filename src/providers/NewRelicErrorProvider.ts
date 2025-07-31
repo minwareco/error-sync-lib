@@ -35,6 +35,11 @@ const fieldConfiguration: Record<string, FieldConfiguration> = {
     nrql: 'uniques(mixpanelId)',
     resultProperty: 'members',
   },
+  userEmails: {
+    name: 'userEmails',
+    nrql: 'uniques(userEmail)',
+    resultProperty: 'members',
+  },
   uniqueCount: {
     name: 'uniqueCount',
     nrql: 'uniqueCount(userId)',
@@ -108,6 +113,7 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
       fieldConfiguration.count,
       fieldConfiguration.appId,
       fieldConfiguration.entityGuid,
+      fieldConfiguration.userEmails,
     ];
 
     if (tableConfig.includeMixpanelIds) {
@@ -163,7 +169,7 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
           newRelicError.countPeriodHours = hoursBack;
           // This might not be set for all error so fallback to an empty array
           newRelicError.mixpanelIds ??= [];
-
+          newRelicError.userEmails ??= [];
           // Generate debug URL
           const appId = newRelicError.appId;
           newRelicError.debugUrl = this.buildDebugUrl(appId, newRelicError.name, newRelicError.entityGuid[0]);
