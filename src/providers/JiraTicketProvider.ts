@@ -205,6 +205,10 @@ export class JiraTicketProvider implements TicketProviderInterface {
       description += `\n\n[Mixpanel Events](${makeReportUrl(errorGroup.instances[0].name.substring(0, 100).trim(), errorGroup.mixpanelIds)})`;
     }
 
+    if (errorGroup.userEmails.length > 0) {
+      description += `\n\n[User Emails](${errorGroup.userEmails.join(', ')})`;
+    }
+
     return {
       clientId: errorGroup.clientId,
       summary,
