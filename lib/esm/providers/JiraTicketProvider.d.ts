@@ -31,6 +31,6 @@ export declare class JiraTicketProvider implements TicketProviderInterface {
     createTicket(ticketContent: TicketContent): Promise<Ticket>;
     updateTicket(ticket: Ticket): Promise<Ticket>;
     reopenTicket(ticket: Ticket): Promise<Ticket>;
-    generateTicketContent(errorGroup: ErrorGroup): TicketContent;
+    generateTicketContent(errorGroup: ErrorGroup): Promise<TicketContent>;
     private makeTicketUrl;
 }
