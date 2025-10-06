@@ -78,7 +78,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
       fields: ['summary', 'priority', 'description', 'labels', 'resolution', 'resolutiondate', 'issuetype'],
     };
 
-    const jiraResults = await this.jiraClient.issueSearch.searchForIssuesUsingJql(searchParams);
+    const jiraResults = await this.jiraClient.issueSearch.searchForIssuesUsingJqlEnhancedSearch(searchParams);
 
     if (!jiraResults.issues || jiraResults.issues.length === 0) {
       return undefined;
