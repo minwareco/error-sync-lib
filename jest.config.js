@@ -6,4 +6,7 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
+  moduleNameMapper: {
+    '^jira\\.js$': '<rootDir>/src/__mocks__/jira.js.ts',
+  },
 }; 
