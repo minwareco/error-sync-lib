@@ -1,4 +1,4 @@
-export declare type AlertContent = {
+export type AlertContent = {
     clientId: string;
     summary: string;
     priority: string;
@@ -7,6 +7,6 @@ export declare type AlertContent = {
     ticketUrl: string | undefined;
     status: string;
 };
-export declare type Alert = AlertContent & {
+export type Alert = AlertContent & {
     id: string;
 };

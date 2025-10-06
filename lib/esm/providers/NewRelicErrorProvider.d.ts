@@ -4,7 +4,7 @@ export declare enum NewRelicErrorProviderType {
     SERVER = "server",
     BROWSER = "browser"
 }
-export declare type NewRelicErrorProviderConfig = {
+export type NewRelicErrorProviderConfig = {
     accountId: string;
     appName: string;
     appConfigId: string;

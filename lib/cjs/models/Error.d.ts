@@ -17,7 +17,7 @@ export declare enum ErrorType {
     SERVER = "server",
     DATA = "data"
 }
-export declare type Error = {
+export type Error = {
     name: string;
     type: ErrorType;
     count: number;
@@ -29,7 +29,7 @@ export declare type Error = {
     debugMessage?: string;
     ticketType?: string;
 };
-export declare type ErrorGroup = {
+export type ErrorGroup = {
     name: string;
     sourceName: string;
     type: ErrorType;

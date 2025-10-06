@@ -1,6 +1,6 @@
 {
   "name": "error-sync-lib",
-  "version": "0.1.41",
+  "version": "0.2.00",
   "private": "true",
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs",
@@ -16,15 +16,15 @@
   "dependencies": {
     "@types/jsurl": "^0.1.2",
     "aws-sdk": "^2.981.0",
-    "jira-client": "^6.22.0",
+    "jira.js": "^5.2.2",
     "jsurl": "^0.1.5",
     "newrelic-api-client": "^0.1.7",
     "opsgenie-sdk": "^0.5.0",
-    "typescript": "^4.4.2"
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
-    "@types/node": "^16.7.10",
+    "@types/node": "^18.19.129",
     "@typescript-eslint/eslint-plugin": "^4.31.0",
     "@typescript-eslint/parser": "^4.31.0",
     "eslint": "^7.32.0",

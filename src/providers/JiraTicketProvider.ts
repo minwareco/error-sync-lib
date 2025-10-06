@@ -1,7 +1,8 @@
 import { TicketProviderInterface } from '../interfaces';
 import { ErrorGroup, ErrorPriority, Ticket, TicketContent } from '../models';
 import JSURL from 'jsurl';
-import JiraApi from 'jira-client';
+import { Version3Client } from 'jira.js';
+import { URLSearchParams } from 'url';
 
 export type JiraBasicAuthConfig = {
   username: string,
@@ -32,7 +33,7 @@ export type JiraTicketProviderConfig = {
 
 export class JiraTicketProvider implements TicketProviderInterface {
   private config;
-  private jiraClient;
+  private jiraClient: Version3Client;
 
   public constructor(config: JiraTicketProviderConfig) {
     this.config = JSON.parse(JSON.stringify(config));
@@ -48,35 +49,38 @@ export class JiraTicketProvider implements TicketProviderInterface {
       };
     }
 
-    const jiraClientConfig: any = {
-      protocol: 'https',
-      host: this.config.host,
-      apiVersion: '2',
-      strictSSL: true,
-    };
-
+    // Initialize jira.js client
     if (this.config.basicAuth) {
-      jiraClientConfig.username = this.config.basicAuth.username;
-      jiraClientConfig.password = this.config.basicAuth.apiKey;
+      this.jiraClient = new Version3Client({
+        host: `https://${this.config.host}`,
+        authentication: {
+          basic: {
+            email: this.config.basicAuth.username,
+            apiToken: this.config.basicAuth.apiKey,
+          },
+        },
+      });
     } else if (this.config.oauth) {
-      jiraClientConfig.oauth = {
-        consumer_key: this.config.oauth.consumerKey,
-        consumer_secret: this.config.oauth.consumerSecret,
-        access_token: this.config.oauth.accessToken,
-        access_token_secret: this.config.oauth.accessTokenSecret,
-      }
+      // OAuth is not directly supported in jira.js v3 - would need OAuth2
+      // For now, throwing an error until OAuth2 is implemented
+      throw new Error('OAuth authentication is not currently supported with jira.js. Please use basic authentication with email and API token.');
     } else {
       throw new Error('JiraTicketProvider configuration must specify either the \'basicAuth\' or \'oauth\' property');
     }
-
-    this.jiraClient = new JiraApi(jiraClientConfig);
   }
 
   public async findTicket(clientId: string): Promise<Ticket|undefined> {
     const jql = `labels = "error:${clientId}"`;
-    const jiraResults = await this.jiraClient.searchJira(jql);
 
-    if (jiraResults.total == 0) {
+    const searchParams: any = {
+      jql,
+      maxResults: 1,
+      fields: ['summary', 'priority', 'description', 'labels', 'resolution', 'resolutiondate', 'issuetype'],
+    };
+
+    const jiraResults = await this.jiraClient.issueSearch.searchForIssuesUsingJql(searchParams);
+
+    if (!jiraResults.issues || jiraResults.issues.length === 0) {
       return undefined;
     }
 
@@ -85,18 +89,18 @@ export class JiraTicketProvider implements TicketProviderInterface {
       id: jiraTicket.id,
       clientId,
       url: this.makeTicketUrl(jiraTicket.key),
-      summary: jiraTicket.fields.summary,
-      priority: jiraTicket.fields.priority.name,
-      description: jiraTicket.fields.description,
+      summary: jiraTicket.fields.summary as string,
+      priority: jiraTicket.fields.priority?.name as string,
+      description: jiraTicket.fields.description as any,
       labels: jiraTicket.fields.labels,
       isOpen: jiraTicket.fields.resolution === null,
       resolutionDate: jiraTicket.fields.resolutiondate,
-      ticketType: jiraTicket.fields.issuetype.id,
+      ticketType: jiraTicket.fields.issuetype?.id,
     };
   }
 
   public async createTicket(ticketContent: TicketContent): Promise<Ticket> {
-    const jiraTicketRequest: any = {
+    const issueData: any = {
       fields: {
         project: { key: this.config.ticket.projectId },
         summary: ticketContent.summary,
@@ -109,9 +113,6 @@ export class JiraTicketProvider implements TicketProviderInterface {
           name: ticketContent.priority
         },
       },
-      transition: {
-        id: this.config.ticket.openTransitionId,
-      },
     };
 
     // optionally specify components
@@ -121,10 +122,10 @@ export class JiraTicketProvider implements TicketProviderInterface {
         components.push({ id: componentId });
       }
 
-      jiraTicketRequest.fields.components = components;
+      issueData.fields.components = components;
     }
 
-    const jiraTicket = await this.jiraClient.addNewIssue(jiraTicketRequest);
+    const jiraTicket = await this.jiraClient.issues.createIssue(issueData);
     return Object.assign(ticketContent, {
       id: jiraTicket.id,
       url: this.makeTicketUrl(jiraTicket.key),
@@ -134,7 +135,9 @@ export class JiraTicketProvider implements TicketProviderInterface {
   }
 
   public async updateTicket(ticket: Ticket): Promise<Ticket> {
-    await this.jiraClient.updateIssue(ticket.id, {
+    await this.jiraClient.issues.editIssue({
+      issueIdOrKey: ticket.id,
+      notifyUsers: false,
       fields: {
         summary: ticket.summary,
         description: ticket.description,
@@ -142,9 +145,6 @@ export class JiraTicketProvider implements TicketProviderInterface {
           name: ticket.priority
         },
       },
-    }, {
-      // do not send email update for this change
-      notifyUsers: false,
     });
 
     // query for the full ticket detail so it can be returned
@@ -152,7 +152,8 @@ export class JiraTicketProvider implements TicketProviderInterface {
   }
 
   public async reopenTicket(ticket: Ticket): Promise<Ticket> {
-    await this.jiraClient.transitionIssue(ticket.id, {
+    await this.jiraClient.issues.doTransition({
+      issueIdOrKey: ticket.id,
       transition: {
         id: this.config.ticket.openTransitionId,
       },

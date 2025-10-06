@@ -1,4 +1,4 @@
-export declare type TicketContent = {
+export type TicketContent = {
     clientId: string;
     summary: string;
     priority: string;
@@ -6,7 +6,7 @@ export declare type TicketContent = {
     labels: string[];
     ticketType: string;
 };
-export declare type Ticket = TicketContent & {
+export type Ticket = TicketContent & {
     id: string;
     url: string;
     isOpen: boolean;

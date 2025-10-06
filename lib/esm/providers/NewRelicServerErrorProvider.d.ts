@@ -1,5 +1,5 @@
 import { NewRelicErrorProvider, NewRelicErrorProviderConfig } from './NewRelicErrorProvider';
-export declare type NewRelicServerErrorProviderConfig = Omit<NewRelicErrorProviderConfig, 'type'> & {
+export type NewRelicServerErrorProviderConfig = Omit<NewRelicErrorProviderConfig, 'type'> & {
     excludedeHosts?: [string];
 };
 export declare class NewRelicServerErrorProvider extends NewRelicErrorProvider {

@@ -1,11 +1,11 @@
 import { ErrorGroup, ErrorPriority } from '../models';
 import { ErrorPrioritizationResult, PrioritizationProviderInterface } from '../interfaces';
-export declare type ErrorCountPrioritizationProviderThreshold = {
+export type ErrorCountPrioritizationProviderThreshold = {
     threshold: number;
     priority: ErrorPriority;
     label: string;
 };
-export declare type ErrorCountPrioritizationProviderConfig = {
+export type ErrorCountPrioritizationProviderConfig = {
     thresholds: ErrorCountPrioritizationProviderThreshold[];
 };
 export declare const DefaultErrorCountPrioritizationProviderConfig: {
