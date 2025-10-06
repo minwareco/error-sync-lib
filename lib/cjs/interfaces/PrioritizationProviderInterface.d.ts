@@ -1,5 +1,5 @@
 import { ErrorGroup, ErrorPriority } from '../models';
-export declare type ErrorPrioritizationResult = {
+export type ErrorPrioritizationResult = {
     priority: ErrorPriority;
     priorityReason: string;
 };

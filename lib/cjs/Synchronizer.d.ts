@@ -1,22 +1,22 @@
 import { ErrorGroup } from './models';
 import { AlertProviderInterface, CacheProviderInterface, ErrorProviderInterface, PrioritizationProviderInterface, TicketProviderInterface } from './interfaces';
-export declare type SynchronizerError = {
+export type SynchronizerError = {
     message: string;
     errorGroup?: ErrorGroup;
 };
-export declare type SynchronizerResult = {
+export type SynchronizerResult = {
     completedErrorGroups: ErrorGroup[];
     errors: SynchronizerError[];
     exitCode: number;
 };
-export declare type SynchronizerErrorProviderConfig = {
+export type SynchronizerErrorProviderConfig = {
     name: string;
     provider: ErrorProviderInterface;
     prioritizationProvider?: PrioritizationProviderInterface;
     lookbackHours?: number;
     maxErrors?: number;
 };
-export declare type SynchronizerConfig = {
+export type SynchronizerConfig = {
     errors: SynchronizerErrorProviderConfig[];
     ticketProvider: TicketProviderInterface;
     alertProvider: AlertProviderInterface;

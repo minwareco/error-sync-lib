@@ -1,6 +1,6 @@
 import { Alert, AlertContent, ErrorGroup } from '../models';
 import { AlertProviderInterface } from '../interfaces';
-export declare type OpsGenieAlertProviderConfig = {
+export type OpsGenieAlertProviderConfig = {
     host: string;
     apiKey: string;
     priorityMap?: Record<string, string>;
