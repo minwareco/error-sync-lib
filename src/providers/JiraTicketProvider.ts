@@ -3,6 +3,8 @@ import { ErrorGroup, ErrorPriority, Ticket, TicketContent } from '../models';
 import JSURL from 'jsurl';
 import { Version3Client } from 'jira.js';
 import { URLSearchParams } from 'url';
+import { WikiMarkupTransformer } from '@atlaskit/editor-wikimarkup-transformer';
+import { JSONTransformer } from '@atlaskit/editor-json-transformer';
 
 export type JiraBasicAuthConfig = {
   username: string,
@@ -171,44 +173,58 @@ export class JiraTicketProvider implements TicketProviderInterface {
       .replace(/\\n/g, ' ');
     const summary = `[${errorGroup.type}] [${errorGroup.sourceName}] ${groupNameSanitized}`;
 
-    let description = `{noformat}${errorGroup.name}{noformat}` +
-      '\nh4.Priority Reason\n' +
+    // Build wiki markup description (will be converted to ADF)
+    let wikiDescription = `{noformat}${errorGroup.name}{noformat}` +
+      '\nh4. Priority Reason\n' +
       `${errorGroup.priorityReason}` +
-      '\nh4.Instances\n';
+      '\nh4. Instances\n';
 
     for (const instance of errorGroup.instances.slice(0, maxInstances)) {
       let hasDetail = false;
-      description += `{noformat}${instance.name}{noformat}`;
+      wikiDescription += `{noformat}${instance.name}{noformat}`;
 
       if (instance.debugUrl) {
-        description += `\n\nTroubleshoot at: [${instance.debugUrl}]`;
+        wikiDescription += `\n\nTroubleshoot at: [${instance.debugUrl}]`;
         hasDetail = true;
       }
 
       if (instance.debugMessage) {
-        description += `\n\n${instance.debugMessage}`;
+        wikiDescription += `\n\n${instance.debugMessage}`;
         hasDetail = true;
       }
 
       if (!hasDetail) {
-        description += `\n\n_no debug info available_`;
+        wikiDescription += `\n\n_no debug info available_`;
       }
+      
+      wikiDescription += '\n\n';
     }
 
     if (errorGroup.instances.length > 10) {
       const additional = (errorGroup.instances.length - maxInstances);
-      description += `\n\n_...${additional} older instances not shown_`;
+      wikiDescription += `\n_...${additional} older instances not shown_\n`;
     }
 
-
-    // Add a message with a link the mixpanel events page and then
+    // Add Mixpanel Events link if available
     if (errorGroup.mixpanelIds.length > 0) {
-      description += `\n\n[Mixpanel Events](${makeReportUrl(errorGroup.instances[0].name.substring(0, 100).trim(), errorGroup.mixpanelIds)})`;
+      const mixpanelUrl = makeReportUrl(errorGroup.instances[0].name.substring(0, 100).trim(), errorGroup.mixpanelIds);
+      wikiDescription += `\n[Mixpanel Events|${mixpanelUrl}]`;
     }
 
+    // Add User Emails if available
     if (errorGroup.userEmails.length > 0) {
-      description += `\n\n[User Emails](${errorGroup.userEmails.join(', ')})`;
+      wikiDescription += `\n\nUser Emails: ${errorGroup.userEmails.join(', ')}`;
     }
+
+    // Convert wiki markup to ADF format using official Atlassian transformers
+    const wikiTransformer = new WikiMarkupTransformer();
+    const jsonTransformer = new JSONTransformer();
+    
+    // Parse wiki markup to document
+    const doc = wikiTransformer.parse(wikiDescription);
+    
+    // Convert document to ADF JSON format
+    const description = jsonTransformer.encode(doc);
 
     return {
       clientId: errorGroup.clientId,
@@ -231,7 +247,6 @@ export class JiraTicketProvider implements TicketProviderInterface {
     return `https://${this.config.host}/browse/${key}`
   }
 }
-
 
 const makeReportUrl = (message: string, mixpanelIds: string[]): string => {
   const baseUrl = 'https://mixpanel.com/project/2559783/view/3099527/app/boards#id=9957583&';
