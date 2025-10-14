@@ -2,7 +2,7 @@ export type TicketContent = {
     clientId: string;
     summary: string;
     priority: string;
-    description: string;
+    description: string | any;
     labels: string[];
     ticketType: string;
 };

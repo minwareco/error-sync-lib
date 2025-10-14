@@ -2,7 +2,7 @@ export type TicketContent = {
   clientId: string,
   summary: string,
   priority: string,
-  description: string,
+  description: string | any, // string for legacy, any for ADF format
   labels: string[],
   ticketType: string,
 }
