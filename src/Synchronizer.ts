@@ -7,7 +7,7 @@ import {
   PrioritizationProviderInterface,
   TicketProviderInterface
 } from './interfaces';
-import { ErrorCountPrioritizationProvider } from "./providers";
+import { ErrorCountPrioritizationProvider, JiraTicketProvider } from "./providers";
 
 export type SynchronizerError = {
   message: string,
@@ -164,7 +164,7 @@ export class Synchronizer {
       Object.assign(errorGroup.ticket, freshTicketContent);
       errorGroup.ticket = await this.config.ticketProvider.updateTicket(errorGroup.ticket);
     }
-
+    
     const shouldIgnore = (
       errorGroup.ticket.labels.includes('ignore') ||
       errorGroup.ticket.labels.includes('wont fix')
@@ -282,8 +282,7 @@ export class Synchronizer {
   }
 
   private doesTicketNeedUpdate(existingTicket: Ticket, freshTicketContent: TicketContent): boolean {
-    return existingTicket.summary !== freshTicketContent.summary ||
-      existingTicket.description !== freshTicketContent.description;
+    return !JiraTicketProvider.sameTicketContent(existingTicket, freshTicketContent);
   }
 
   private doesAlertNeedUpdate(existingAlert: Alert, freshAlertContent: AlertContent): boolean {

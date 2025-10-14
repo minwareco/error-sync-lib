@@ -246,6 +246,16 @@ export class JiraTicketProvider implements TicketProviderInterface {
   private makeTicketUrl(key: string): string {
     return `https://${this.config.host}/browse/${key}`
   }
+
+  static sameTicketContent(existingTicketContent: TicketContent, freshTicketContent: TicketContent): boolean {
+    const adfTransformer = new JSONTransformer();
+    const wikiTransformer = new WikiMarkupTransformer();
+    const existingDescription = typeof existingTicketContent.description === 'string' ? existingTicketContent.description : wikiTransformer.encode(adfTransformer.parse(existingTicketContent.description));
+    const freshDescription = typeof freshTicketContent.description === 'string' ? freshTicketContent.description : wikiTransformer.encode(adfTransformer.parse(freshTicketContent.description));
+
+    return existingTicketContent.summary === freshTicketContent.summary &&
+      existingDescription === freshDescription;
+  }
 }
 
 const makeReportUrl = (message: string, mixpanelIds: string[]): string => {
