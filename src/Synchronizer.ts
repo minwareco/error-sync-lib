@@ -148,6 +148,13 @@ export class Synchronizer {
     if (!errorGroup.ticket) {
       console.log(`Refreshing ticket from provider for ID: ${errorGroup.clientId}`);
       errorGroup.ticket = await this.config.ticketProvider.findTicket(errorGroup.clientId);
+      if (errorGroup.ticket) {
+        console.log(`[Synchronizer] Ticket found from provider for ID: ${errorGroup.clientId}`);
+        console.log(`  - Ticket isOpen: ${errorGroup.ticket.isOpen}`);
+        console.log(`  - Ticket resolutionDate: ${errorGroup.ticket.resolutionDate}`);
+      } else {
+        console.log(`[Synchronizer] No ticket found from provider for ID: ${errorGroup.clientId}`);
+      }
     }
 
     const freshTicketContent = await this.config.ticketProvider.generateTicketContent(errorGroup);
@@ -175,6 +182,21 @@ export class Synchronizer {
       console.log(`Reopening ticket for ID: ${errorGroup.ticket.id}`);
       errorGroup.ticket = await this.config.ticketProvider.reopenTicket(errorGroup.ticket);
       isTicketReopened = true;
+    } else {
+      if (shouldIgnore) {
+        console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} has ignore/wont fix label - not reopening`);
+      } else if (errorGroup.ticket.isOpen) {
+        console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} is already open - not reopening`);
+      } else {
+        console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} does not meet reopening criteria`);
+        console.log(`  - resolutionDate: ${errorGroup.ticket.resolutionDate}`);
+        if (errorGroup.ticket.resolutionDate) {
+          const resolutionDate = new Date(errorGroup.ticket.resolutionDate);
+          const currentDate = new Date();
+          const diffHours = (currentDate.getTime() - resolutionDate.getTime()) / (1000 * 60 * 60);
+          console.log(`  - Hours since resolution: ${diffHours.toFixed(2)} (needs >= 24)`);
+        }
+      }
     }
 
     await this.config.cacheProvider.setObject(errorGroup.clientId, errorGroup.ticket, CacheName.Tickets, false);
@@ -282,7 +304,9 @@ export class Synchronizer {
   }
 
   private doesTicketNeedUpdate(existingTicket: Ticket, freshTicketContent: TicketContent): boolean {
-    return !JiraTicketProvider.sameTicketContent(existingTicket, freshTicketContent);
+    const sameTicketContent = JiraTicketProvider.sameTicketContent(existingTicket, freshTicketContent);
+    console.log('sameTicketContent: ', sameTicketContent);
+    return !sameTicketContent;
   }
 
   private doesAlertNeedUpdate(existingAlert: Alert, freshAlertContent: AlertContent): boolean {

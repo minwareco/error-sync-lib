@@ -73,6 +73,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
 
   public async findTicket(clientId: string): Promise<Ticket|undefined> {
     const jql = `labels = "error:${clientId}"`;
+    console.log(`[JiraTicketProvider.findTicket] Searching for ticket with JQL: ${jql}`);
 
     const searchParams: any = {
       jql,
@@ -81,13 +82,15 @@ export class JiraTicketProvider implements TicketProviderInterface {
     };
 
     const jiraResults = await this.jiraClient.issueSearch.searchForIssuesUsingJqlEnhancedSearch(searchParams);
+    console.log(`[JiraTicketProvider.findTicket] Found ${jiraResults.issues?.length || 0} tickets for clientId: ${clientId}`);
 
     if (!jiraResults.issues || jiraResults.issues.length === 0) {
+      console.log(`[JiraTicketProvider.findTicket] No ticket found for clientId: ${clientId}`);
       return undefined;
     }
 
     const jiraTicket = jiraResults.issues[0];
-    return {
+    const ticket = {
       id: jiraTicket.id,
       clientId,
       url: this.makeTicketUrl(jiraTicket.key),
@@ -99,6 +102,14 @@ export class JiraTicketProvider implements TicketProviderInterface {
       resolutionDate: jiraTicket.fields.resolutiondate,
       ticketType: jiraTicket.fields.issuetype?.id,
     };
+
+    console.log(`[JiraTicketProvider.findTicket] Found ticket for clientId: ${clientId}`);
+    console.log(`  - ID: ${jiraTicket.id}, Key: ${jiraTicket.key}`);
+    console.log(`  - isOpen: ${ticket.isOpen} (resolution: ${jiraTicket.fields.resolution})`);
+    console.log(`  - resolutionDate: ${ticket.resolutionDate}`);
+    console.log(`  - labels: ${ticket.labels.join(', ')}`);
+
+    return ticket;
   }
 
   public async createTicket(ticketContent: TicketContent): Promise<Ticket> {
