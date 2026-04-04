@@ -55,6 +55,9 @@ export class JiraTicketProvider implements TicketProviderInterface {
     if (this.config.basicAuth) {
       this.jiraClient = new Version3Client({
         host: `https://${this.config.host}`,
+        baseRequestConfig: {
+          timeout: 90 * 1000, // 90 seconds, incase something is slow
+        },
         authentication: {
           basic: {
             email: this.config.basicAuth.username,
