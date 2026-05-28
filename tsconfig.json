@@ -3,12 +3,16 @@
     "outDir": "lib/esm",
     "target": "ES2018",
     "module": "ES2020",
-    "moduleResolution": "node",
+    "moduleResolution": "node10",
+    "ignoreDeprecations": "6.0",
     "esModuleInterop": true,
     "declaration": true,
     "removeComments": true,
     "sourceMap": true,
     "baseUrl": "./src",
+    "skipLibCheck": true,
+    "strict": false,
+    "types": ["node", "jest"]
   },
   "include": ["src/"],
   "exclude": ["!src/"]
