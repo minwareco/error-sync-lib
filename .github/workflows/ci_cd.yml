@@ -20,11 +20,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Lint + Unit Test + Build
-        run: |
-          cat <<EOT >> commands.txt
-          yarn lint
-          yarn build
-          yarn test
-          EOT
-          parallel --halt now,fail=1 < commands.txt
+      - name: Run lint
+        run: yarn lint
+
+      - name: Run build script
+        run: yarn build
+
+      - name: Run unit tests
+        run: yarn test
