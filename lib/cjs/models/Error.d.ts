@@ -28,6 +28,7 @@ export type Error = {
     debugUrl?: string;
     debugMessage?: string;
     ticketType?: string;
+    labels?: string[];
 };
 export type ErrorGroup = {
     name: string;
