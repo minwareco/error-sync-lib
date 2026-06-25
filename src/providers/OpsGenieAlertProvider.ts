@@ -57,7 +57,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
         summary: opsgenieAlert.message,
         description: opsgenieAlert.description,
         priority: opsgenieAlert.priority,
-        labels: [],
+        labels: opsgenieAlert.tags ?? [],
         ticketUrl: opsgenieAlert.details['Ticket Link'],
         status: opsgenieAlert.status,
       }
@@ -73,6 +73,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
         description: alertContent.description,
         alias: alertContent.clientId,
         priority: priority,
+        tags: alertContent.labels,
         details: {
           'Ticket Link': alertContent.ticketUrl,
         },
@@ -113,7 +114,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
       summary,
       description: errorGroup.name,
       priority: this.config.priorityMap[errorGroup.priority],
-      labels: [],
+      labels: errorGroup.instances[0]?.labels ?? [],
       ticketUrl: errorGroup.ticket?.url,
       status: 'open',
     }
