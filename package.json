@@ -18,7 +18,7 @@
     "node": "^22"
   },
   "dependencies": {
-    "@atlaskit/editor-json-transformer": "^8.30.0",
+    "@atlaskit/editor-json-transformer": "^8.33.2",
     "@atlaskit/editor-wikimarkup-transformer": "^11.19.0",
     "@types/jsurl": "^0.1.2",
     "aws-sdk": "^2.981.0",
