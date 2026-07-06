@@ -14,7 +14,8 @@
     "ci:lint": "run-p -c --aggregate-output \"format:check -- --incremental=false\" \"lint:oxlint\"",
     "lint:types": "tsc --noEmit",
     "test": "jest --passWithNoTests src",
-    "dev": "npm run build:cjs && node lib/cjs/manualTest.js"
+    "dev": "npm run build:cjs && node lib/cjs/manualTest.js",
+    "prepare": "husky || true"
   },
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -43,6 +44,7 @@
     "npm-run-all2": "^8.0.4",
     "oxlint": "^1.72.0",
     "oxlint-tsgolint": "^0.23.0",
-    "ts-jest": "^29.4.11"
+    "ts-jest": "^29.4.11",
+    "husky": "^9"
   }
 }
