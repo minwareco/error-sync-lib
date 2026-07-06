@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { Synchronizer, SynchronizerConfig, SynchronizerErrorProviderConfig } from '../Synchronizer';
 import { Error, ErrorType, ErrorCountType, Ticket, TicketContent, Alert, AlertContent, CacheName, ErrorGroup } from '../models';
 import { 
@@ -21,6 +20,7 @@ class MockErrorProvider implements ErrorProviderInterface {
   }
 }
 
+// eslint-disable-next-line max-classes-per-file
 class MockTicketProvider implements TicketProviderInterface {
   async findTicket(clientId: string): Promise<Ticket | null> { 
     return null; 
@@ -72,7 +72,10 @@ class MockAlertProvider implements AlertProviderInterface {
     return alert; 
   }
   
-  async closeAlert(alert: Alert): Promise<void> { }
+  async closeAlert(alert: Alert): Promise<void> {
+    // eslint-disable-next-line no-useless-return
+    return;
+  }
   
   async generateAlertContent(errorGroup: ErrorGroup): Promise<AlertContent> { 
     return { 
@@ -92,11 +95,20 @@ class MockCacheProvider implements CacheProviderInterface {
     return null; 
   }
   
-  async setObject<T>(key: string, value: T, cacheName: CacheName, persist: boolean): Promise<void> { }
+  async setObject<T>(key: string, value: T, cacheName: CacheName, persist: boolean): Promise<void> {
+    // eslint-disable-next-line no-useless-return
+    return;
+  }
 
-  async saveAllCaches(): Promise<void> { }
+  async saveAllCaches(): Promise<void> {
+    // eslint-disable-next-line no-useless-return
+    return;
+  }
 
-  async clearAllCaches(): Promise<void> { }
+  async clearAllCaches(): Promise<void> {
+    // eslint-disable-next-line no-useless-return
+    return;
+  }
 }
 
 describe('Synchronizer', () => {

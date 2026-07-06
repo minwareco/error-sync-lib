@@ -1,4 +1,6 @@
-import { Alert, Ticket } from '.';
+// eslint-disable-next-line import/no-duplicates
+import { Alert } from '.';
+import { Ticket } from '.';
 
 export enum ErrorPriority {
   P1 = 'P1',

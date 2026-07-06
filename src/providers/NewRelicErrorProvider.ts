@@ -149,7 +149,8 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
           return resolve([]);
         } else if (response.body.error) {
           return reject(response.body.error);
-        } else if (response.statusCode !== 200) {
+        // eslint-disable-next-line eqeqeq
+        } else if (response.statusCode != 200) {
           return reject(response.body);
         }
 
