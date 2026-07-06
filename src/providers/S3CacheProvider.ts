@@ -30,7 +30,7 @@ export class S3CacheProvider implements CacheProviderInterface {
     cache[id] = value;
 
     if (saveCache) {
-      return await this.setCache(cacheName, cache);
+      return  this.setCache(cacheName, cache);
     }
   }
 

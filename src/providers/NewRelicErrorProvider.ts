@@ -100,9 +100,9 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
       }];
       const encodedFilters = encodeURIComponent(JSON.stringify(filters));
       return `https://rpm.newrelic.com/accounts/${this.config.accountId}/applications/${appId}/filterable_errors#/table?top_facet=transactionUiName&primary_facet=error.class&barchart=barchart&filters=${encodedFilters}&duration=${hoursInMs}`;
-    } else {
-      return `https://one.newrelic.com/nr1-core/errors-inbox/entity-inbox/${entityGuid}?duration=${hoursInMs}`;
     }
+      return `https://one.newrelic.com/nr1-core/errors-inbox/entity-inbox/${entityGuid}?duration=${hoursInMs}`;
+    
   }
 
   public async getErrors(hoursBack = 24, limit = 1000): Promise<Error[]> {
@@ -149,7 +149,7 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
           return resolve([]);
         } else if (response.body.error) {
           return reject(response.body.error);
-        } else if (response.statusCode != 200) {
+        } else if (response.statusCode !== 200) {
           return reject(response.body);
         }
 
@@ -171,7 +171,7 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
           newRelicError.mixpanelIds ??= [];
           newRelicError.userEmails ??= [];
           // Generate debug URL
-          const appId = newRelicError.appId;
+          const {appId} = newRelicError;
           newRelicError.debugUrl = this.buildDebugUrl(appId, newRelicError.name, newRelicError.entityGuid[0]);
 
           errors.push(newRelicError);

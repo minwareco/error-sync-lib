@@ -182,20 +182,18 @@ export class Synchronizer {
       console.log(`Reopening ticket for ID: ${errorGroup.ticket.id}`);
       errorGroup.ticket = await this.config.ticketProvider.reopenTicket(errorGroup.ticket);
       isTicketReopened = true;
+    } else if (shouldIgnore) {
+      console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} has ignore/wont fix label - not reopening`);
+    } else if (errorGroup.ticket.isOpen) {
+      console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} is already open - not reopening`);
     } else {
-      if (shouldIgnore) {
-        console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} has ignore/wont fix label - not reopening`);
-      } else if (errorGroup.ticket.isOpen) {
-        console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} is already open - not reopening`);
-      } else {
-        console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} does not meet reopening criteria`);
-        console.log(`  - resolutionDate: ${errorGroup.ticket.resolutionDate}`);
-        if (errorGroup.ticket.resolutionDate) {
-          const resolutionDate = new Date(errorGroup.ticket.resolutionDate);
-          const currentDate = new Date();
-          const diffHours = (currentDate.getTime() - resolutionDate.getTime()) / (1000 * 60 * 60);
-          console.log(`  - Hours since resolution: ${diffHours.toFixed(2)} (needs >= 24)`);
-        }
+      console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} does not meet reopening criteria`);
+      console.log(`  - resolutionDate: ${errorGroup.ticket.resolutionDate}`);
+      if (errorGroup.ticket.resolutionDate) {
+        const resolutionDate = new Date(errorGroup.ticket.resolutionDate);
+        const currentDate = new Date();
+        const diffHours = (currentDate.getTime() - resolutionDate.getTime()) / (1000 * 60 * 60);
+        console.log(`  - Hours since resolution: ${diffHours.toFixed(2)} (needs >= 24)`);
       }
     }
 

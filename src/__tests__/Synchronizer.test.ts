@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import { Synchronizer, SynchronizerConfig, SynchronizerErrorProviderConfig } from '../Synchronizer';
 import { Error, ErrorType, ErrorCountType, Ticket, TicketContent, Alert, AlertContent, CacheName, ErrorGroup } from '../models';
 import { 
@@ -71,9 +72,7 @@ class MockAlertProvider implements AlertProviderInterface {
     return alert; 
   }
   
-  async closeAlert(alert: Alert): Promise<void> { 
-    return; 
-  }
+  async closeAlert(alert: Alert): Promise<void> { }
   
   async generateAlertContent(errorGroup: ErrorGroup): Promise<AlertContent> { 
     return { 
@@ -93,17 +92,11 @@ class MockCacheProvider implements CacheProviderInterface {
     return null; 
   }
   
-  async setObject<T>(key: string, value: T, cacheName: CacheName, persist: boolean): Promise<void> { 
-    return; 
-  }
-  
-  async saveAllCaches(): Promise<void> { 
-    return; 
-  }
-  
-  async clearAllCaches(): Promise<void> { 
-    return; 
-  }
+  async setObject<T>(key: string, value: T, cacheName: CacheName, persist: boolean): Promise<void> { }
+
+  async saveAllCaches(): Promise<void> { }
+
+  async clearAllCaches(): Promise<void> { }
 }
 
 describe('Synchronizer', () => {

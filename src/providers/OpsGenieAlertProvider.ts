@@ -42,15 +42,15 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
           return resolve(undefined);
         } else if (error instanceof Error) {
           return reject(error);
-        } else {
-          return reject(new Error(error.message || error));
         }
+          return reject(new Error(error.message || error));
+        
       });
     });
 
     if (!opsgenieAlert) {
       return undefined;
-    } else {
+    }
       return {
         id: clientId,
         clientId,
@@ -61,7 +61,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
         ticketUrl: opsgenieAlert.details['Ticket Link'],
         status: opsgenieAlert.status,
       }
-    }
+    
   }
 
   public async createAlert(alertContent: AlertContent): Promise<Alert> {
@@ -72,14 +72,14 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
         message: alertContent.summary,
         description: alertContent.description,
         alias: alertContent.clientId,
-        priority: priority,
+        priority,
         tags: alertContent.labels,
         details: {
           'Ticket Link': alertContent.ticketUrl,
         },
-      }, (error, response) => {
-        return (error ? reject(error) : resolve(response));
-      });
+      }, (error, response) => 
+        (error ? reject(error) : resolve(response))
+      );
     });
 
     return Object.assign(alertContent, {
@@ -90,7 +90,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
   public async updateAlert(alert: Alert): Promise<Alert> {
     // an OpsGenie alert cannot be updated, so we just recreate it
     await this.closeAlert(alert);
-    return await this.createAlert(alert);
+    return  this.createAlert(alert);
   }
 
   public async closeAlert(alert: Alert): Promise<void> {
@@ -100,9 +100,9 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
         identifierType: 'alias',
       }, {
         note: `Auto-closed by error-sync-lib`,
-      }, (error, response) => {
-        return (error ? reject(error) : resolve(response));
-      });
+      }, (error, response) => 
+        (error ? reject(error) : resolve(response))
+      );
     });
   }
 

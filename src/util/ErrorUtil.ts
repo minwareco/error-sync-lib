@@ -18,7 +18,7 @@ export const getReadableErrorCountPeriod = (countPeriodHours: number) => {
 
   if (hours === 0) {
     return (days > 1 ? `${days} days` : 'day'); // e.g. day, 2 days
-  } else {
-    return `${days}d ${hours}h`; // e.g. 1d 12h
   }
+    return `${days}d ${hours}h`; // e.g. 1d 12h
+  
 }
