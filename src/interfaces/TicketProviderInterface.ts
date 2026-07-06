@@ -1,7 +1,7 @@
 import { ErrorGroup, Ticket, TicketContent } from '../models';
 
 export interface TicketProviderInterface {
-  findTicket(clientId: string): Promise<Ticket | undefined>;
+  findTicket(clientId: string): Promise<Ticket|undefined>;
 
   createTicket(ticketContent: TicketContent): Promise<Ticket>;
 
@@ -11,3 +11,4 @@ export interface TicketProviderInterface {
 
   generateTicketContent(errorGroup: ErrorGroup): Promise<TicketContent>;
 }
+

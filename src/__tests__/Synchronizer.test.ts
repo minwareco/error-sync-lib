@@ -1,20 +1,10 @@
 import { Synchronizer, SynchronizerConfig, SynchronizerErrorProviderConfig } from '../Synchronizer';
-import {
-  Alert,
-  AlertContent,
-  CacheName,
-  Error,
-  ErrorCountType,
-  ErrorGroup,
-  ErrorType,
-  Ticket,
-  TicketContent,
-} from '../models';
-import {
-  AlertProviderInterface,
-  CacheProviderInterface,
-  ErrorProviderInterface,
-  TicketProviderInterface,
+import { Error, ErrorType, ErrorCountType, Ticket, TicketContent, Alert, AlertContent, CacheName, ErrorGroup } from '../models';
+import { 
+  ErrorProviderInterface, 
+  TicketProviderInterface, 
+  AlertProviderInterface, 
+  CacheProviderInterface 
 } from '../interfaces';
 
 // Mock implementations for testing
@@ -32,89 +22,89 @@ class MockErrorProvider implements ErrorProviderInterface {
 
 // eslint-disable-next-line max-classes-per-file
 class MockTicketProvider implements TicketProviderInterface {
-  async findTicket(clientId: string): Promise<Ticket | null> {
-    return null;
+  async findTicket(clientId: string): Promise<Ticket | null> { 
+    return null; 
   }
-
-  async createTicket(content: TicketContent): Promise<Ticket> {
-    return {
+  
+  async createTicket(content: TicketContent): Promise<Ticket> { 
+    return { 
       ...content,
-      id: '123',
-      url: 'http://test.com',
-      isOpen: true,
-      resolutionDate: undefined,
-    };
+      id: '123', 
+      url: 'http://test.com', 
+      isOpen: true, 
+      resolutionDate: undefined 
+    }; 
   }
-
-  async updateTicket(ticket: Ticket): Promise<Ticket> {
-    return ticket;
+  
+  async updateTicket(ticket: Ticket): Promise<Ticket> { 
+    return ticket; 
   }
-
-  async reopenTicket(ticket: Ticket): Promise<Ticket> {
-    return ticket;
+  
+  async reopenTicket(ticket: Ticket): Promise<Ticket> { 
+    return ticket; 
   }
-
-  async generateTicketContent(errorGroup: ErrorGroup): Promise<TicketContent> {
-    return {
+  
+  async generateTicketContent(errorGroup: ErrorGroup): Promise<TicketContent> { 
+    return { 
       clientId: errorGroup.clientId,
-      summary: 'Test',
+      summary: 'Test', 
       description: 'Test Description',
       priority: 'P3',
       labels: [],
-      ticketType: 'bug',
-    };
+      ticketType: 'bug'
+    }; 
   }
 }
 
 class MockAlertProvider implements AlertProviderInterface {
-  async findAlert(clientId: string): Promise<Alert | null> {
-    return null;
+  async findAlert(clientId: string): Promise<Alert | null> { 
+    return null; 
   }
-
-  async createAlert(content: AlertContent): Promise<Alert> {
-    return {
+  
+  async createAlert(content: AlertContent): Promise<Alert> { 
+    return { 
       ...content,
-      id: '123',
-    };
+      id: '123'
+    }; 
   }
-
-  async updateAlert(alert: Alert): Promise<Alert> {
-    return alert;
+  
+  async updateAlert(alert: Alert): Promise<Alert> { 
+    return alert; 
   }
-
+  
   async closeAlert(alert: Alert): Promise<void> {
     // eslint-disable-next-line no-useless-return
     return;
   }
-
-  async generateAlertContent(errorGroup: ErrorGroup): Promise<AlertContent> {
-    return {
+  
+  async generateAlertContent(errorGroup: ErrorGroup): Promise<AlertContent> { 
+    return { 
       clientId: errorGroup.clientId,
-      summary: 'Test Alert',
-      description: 'Test Alert Description',
-      priority: 'P3',
+      summary: 'Test Alert', 
+      description: 'Test Alert Description', 
+      priority: 'P3', 
       ticketUrl: '',
       labels: [],
-      status: 'open',
-    };
+      status: 'open'
+    }; 
   }
 }
 
 class MockCacheProvider implements CacheProviderInterface {
-  async getObject<T>(key: string, cacheName: CacheName): Promise<T | null> {
-    return null;
+  async getObject<T>(key: string, cacheName: CacheName): Promise<T | null> { 
+    return null; 
   }
-
+  
   async setObject<T>(key: string, value: T, cacheName: CacheName, persist: boolean): Promise<void> {
     // eslint-disable-next-line no-useless-return
     return;
   }
-
+  
   async saveAllCaches(): Promise<void> {
     // eslint-disable-next-line no-useless-return
     return;
   }
-
+  
   async clearAllCaches(): Promise<void> {
     // eslint-disable-next-line no-useless-return
     return;
@@ -175,7 +165,7 @@ describe('Synchronizer', () => {
       expect(result.exitCode).toBe(0);
       expect(result.errors).toHaveLength(0);
       expect(result.completedErrorGroups).toHaveLength(1);
-
+      
       // Verify the merged mixpanelIds contains only the defined values
       const errorGroup = result.completedErrorGroups[0];
       expect(errorGroup.mixpanelIds).toEqual(['user1', 'user2']);
@@ -211,7 +201,7 @@ describe('Synchronizer', () => {
       expect(result.exitCode).toBe(0);
       expect(result.errors).toHaveLength(0);
       expect(result.completedErrorGroups).toHaveLength(1);
-
+      
       // Verify the merged mixpanelIds is an empty array
       const errorGroup = result.completedErrorGroups[0];
       expect(errorGroup.mixpanelIds).toEqual([]);
@@ -255,13 +245,12 @@ describe('Synchronizer', () => {
       expect(result.exitCode).toBe(0);
       expect(result.errors).toHaveLength(0);
       expect(result.completedErrorGroups).toHaveLength(1);
-
+      
       // Verify the merged mixpanelIds contains unique values from all defined arrays
       const errorGroup = result.completedErrorGroups[0];
-      expect(errorGroup.mixpanelIds)
-        .toEqual(expect.arrayContaining(['session1', 'session2', 'session3']));
+      expect(errorGroup.mixpanelIds).toEqual(expect.arrayContaining(['session1', 'session2', 'session3']));
       expect(errorGroup.mixpanelIds).toHaveLength(3); // Should be unique
       expect(errorGroup.instances).toHaveLength(3);
     });
   });
-});
+}); 

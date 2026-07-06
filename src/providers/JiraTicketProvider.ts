@@ -7,31 +7,31 @@ import { WikiMarkupTransformer } from '@atlaskit/editor-wikimarkup-transformer';
 import { JSONTransformer } from '@atlaskit/editor-json-transformer';
 
 export type JiraBasicAuthConfig = {
-  username: string;
-  apiKey: string;
-};
+  username: string,
+  apiKey: string,
+}
 
 export type JiraOAuthConfig = {
-  consumerKey: string;
-  consumerSecret: string;
-  accessToken: string;
-  accessTokenSecret: string;
-};
+  consumerKey: string,
+  consumerSecret: string,
+  accessToken: string,
+  accessTokenSecret: string,
+}
 
 export type JiraTicketConfig = {
-  projectId: string;
-  issueTypeId: string;
-  openTransitionId: string;
-  componentIds?: string[];
-  priorityMap?: Record<string, string>;
-};
+  projectId: string,
+  issueTypeId: string,
+  openTransitionId: string,
+  componentIds?: string[],
+  priorityMap?: Record<string, string>,
+}
 
 export type JiraTicketProviderConfig = {
-  host: string;
-  basicAuth?: JiraBasicAuthConfig;
-  oauth?: JiraOAuthConfig;
-  ticket: JiraTicketConfig;
-};
+  host: string,
+  basicAuth?: JiraBasicAuthConfig,
+  oauth?: JiraOAuthConfig,
+  ticket: JiraTicketConfig,
+}
 
 export class JiraTicketProvider implements TicketProviderInterface {
   private config;
@@ -70,34 +70,22 @@ export class JiraTicketProvider implements TicketProviderInterface {
       // For now, throwing an error until OAuth2 is implemented
       throw new Error('OAuth authentication is not currently supported with jira.js. Please use basic authentication with email and API token.');
     } else {
-      throw new Error("JiraTicketProvider configuration must specify either the 'basicAuth' or 'oauth' property");
+      throw new Error('JiraTicketProvider configuration must specify either the \'basicAuth\' or \'oauth\' property');
     }
   }
 
-  public async findTicket(clientId: string): Promise<Ticket | undefined> {
+  public async findTicket(clientId: string): Promise<Ticket|undefined> {
     const jql = `labels = "error:${clientId}"`;
     console.log(`[JiraTicketProvider.findTicket] Searching for ticket with JQL: ${jql}`);
 
     const searchParams: any = {
       jql,
       maxResults: 1,
-      fields: [
-        'summary',
-        'priority',
-        'description',
-        'labels',
-        'resolution',
-        'resolutiondate',
-        'issuetype',
-      ],
+      fields: ['summary', 'priority', 'description', 'labels', 'resolution', 'resolutiondate', 'issuetype'],
     };
 
-    const jiraResults = await this.jiraClient.issueSearch
-      .searchForIssuesUsingJqlEnhancedSearch(searchParams);
-    console
-      .log(`[JiraTicketProvider.findTicket] Found ${
-        jiraResults.issues?.length || 0
-      } tickets for clientId: ${clientId}`);
+    const jiraResults = await this.jiraClient.issueSearch.searchForIssuesUsingJqlEnhancedSearch(searchParams);
+    console.log(`[JiraTicketProvider.findTicket] Found ${jiraResults.issues?.length || 0} tickets for clientId: ${clientId}`);
 
     if (!jiraResults.issues || jiraResults.issues.length === 0) {
       console.log(`[JiraTicketProvider.findTicket] No ticket found for clientId: ${clientId}`);
@@ -138,7 +126,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
         },
         labels: ticketContent.labels,
         priority: {
-          name: ticketContent.priority,
+          name: ticketContent.priority
         },
       },
     };
@@ -170,7 +158,7 @@ export class JiraTicketProvider implements TicketProviderInterface {
         summary: ticket.summary,
         description: ticket.description,
         priority: {
-          name: ticket.priority,
+          name: ticket.priority
         },
       },
     });
@@ -200,10 +188,10 @@ export class JiraTicketProvider implements TicketProviderInterface {
     const summary = `[${errorGroup.type}] [${errorGroup.sourceName}] ${groupNameSanitized}`;
 
     // Build wiki markup description (will be converted to ADF)
-    let wikiDescription = `{noformat}${errorGroup.name}{noformat}`
-      + '\nh4. Priority Reason\n'
-      + `${errorGroup.priorityReason}`
-      + '\nh4. Instances\n';
+    let wikiDescription = `{noformat}${errorGroup.name}{noformat}` +
+      '\nh4. Priority Reason\n' +
+      `${errorGroup.priorityReason}` +
+      '\nh4. Instances\n';
 
     for (const instance of errorGroup.instances.slice(0, maxInstances)) {
       let hasDetail = false;
@@ -222,21 +210,18 @@ export class JiraTicketProvider implements TicketProviderInterface {
       if (!hasDetail) {
         wikiDescription += `\n\n_no debug info available_`;
       }
-
+      
       wikiDescription += '\n\n';
     }
 
     if (errorGroup.instances.length > 10) {
-      const additional = errorGroup.instances.length - maxInstances;
+      const additional = (errorGroup.instances.length - maxInstances);
       wikiDescription += `\n_...${additional} older instances not shown_\n`;
     }
 
     // Add Mixpanel Events link if available
     if (errorGroup.mixpanelIds.length > 0) {
-      const mixpanelUrl = makeReportUrl(
-        errorGroup.instances[0].name.substring(0, 100).trim(),
-        errorGroup.mixpanelIds,
-      );
+      const mixpanelUrl = makeReportUrl(errorGroup.instances[0].name.substring(0, 100).trim(), errorGroup.mixpanelIds);
       wikiDescription += `\n[Mixpanel Events|${mixpanelUrl}]`;
     }
 
@@ -248,10 +233,10 @@ export class JiraTicketProvider implements TicketProviderInterface {
     // Convert wiki markup to ADF format using official Atlassian transformers
     const wikiTransformer = new WikiMarkupTransformer();
     const jsonTransformer = new JSONTransformer();
-
+    
     // Parse wiki markup to document
     const doc = wikiTransformer.parse(wikiDescription);
-
+    
     // Convert document to ADF JSON format
     const description = jsonTransformer.encode(doc);
 
@@ -269,28 +254,21 @@ export class JiraTicketProvider implements TicketProviderInterface {
       ],
       // Use the ticketType from the first error instance if available, otherwise fall back to config
       ticketType: errorGroup.instances[0]?.ticketType || this.config.ticket.issueTypeId,
-    };
+    }
   }
 
   private makeTicketUrl(key: string): string {
-    return `https://${this.config.host}/browse/${key}`;
+    return `https://${this.config.host}/browse/${key}`
   }
 
-  static sameTicketContent(
-    existingTicketContent: TicketContent,
-    freshTicketContent: TicketContent,
-  ): boolean {
+  static sameTicketContent(existingTicketContent: TicketContent, freshTicketContent: TicketContent): boolean {
     const adfTransformer = new JSONTransformer();
     const wikiTransformer = new WikiMarkupTransformer();
-    const existingDescription = typeof existingTicketContent.description === 'string'
-      ? existingTicketContent.description
-      : wikiTransformer.encode(adfTransformer.parse(existingTicketContent.description));
-    const freshDescription = typeof freshTicketContent.description === 'string'
-      ? freshTicketContent.description
-      : wikiTransformer.encode(adfTransformer.parse(freshTicketContent.description));
+    const existingDescription = typeof existingTicketContent.description === 'string' ? existingTicketContent.description : wikiTransformer.encode(adfTransformer.parse(existingTicketContent.description));
+    const freshDescription = typeof freshTicketContent.description === 'string' ? freshTicketContent.description : wikiTransformer.encode(adfTransformer.parse(freshTicketContent.description));
 
-    return existingTicketContent.summary === freshTicketContent.summary
-      && existingDescription === freshDescription;
+    return existingTicketContent.summary === freshTicketContent.summary &&
+      existingDescription === freshDescription;
   }
 }
 
@@ -309,7 +287,7 @@ const makeReportUrl = (message: string, mixpanelIds: string[]): string => {
       filterValue: message,
       limitValues: false,
       defaultEmpty: false,
-      activeValue: message,
+      activeValue: message
     },
     {
       resourceType: 'event',
@@ -321,12 +299,12 @@ const makeReportUrl = (message: string, mixpanelIds: string[]): string => {
       filterValue: mixpanelIds,
       limitValues: false,
       defaultEmpty: false,
-      activeValue: mixpanelIds,
-    },
-  ];
+      activeValue: mixpanelIds
+    }
+  ]
 
-  const settings = JSURL.stringify(filterSettings);
+  const settings = JSURL.stringify(filterSettings);  
   searchParams.set('filters', settings);
 
   return `${baseUrl}${searchParams.toString()}`;
-};
+}

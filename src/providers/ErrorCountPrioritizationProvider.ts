@@ -1,15 +1,15 @@
 import { ErrorGroup, ErrorPriority } from '../models';
 import { ErrorPrioritizationResult, PrioritizationProviderInterface } from '../interfaces';
-import { getReadableErrorCountPeriod } from '../util/ErrorUtil';
+import { getReadableErrorCountPeriod } from "../util/ErrorUtil";
 
 export type ErrorCountPrioritizationProviderThreshold = {
-  threshold: number;
-  priority: ErrorPriority;
-  label: string;
+  threshold: number,
+  priority: ErrorPriority,
+  label: string,
 };
 
 export type ErrorCountPrioritizationProviderConfig = {
-  thresholds: ErrorCountPrioritizationProviderThreshold[];
+  thresholds: ErrorCountPrioritizationProviderThreshold[],
 };
 
 export const DefaultErrorCountPrioritizationProviderConfig = {
