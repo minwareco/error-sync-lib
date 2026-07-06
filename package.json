@@ -30,7 +30,7 @@
     "typescript": "^6.0.3"
   },
   "devDependencies": {
-    "@minware/oxlint-config": "file:../oxlint-config",
+    "@minware/oxlint-config": "^0.1.1-rc.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^18.19.129",
     "jest": "^29.7.0",
