@@ -3,8 +3,6 @@
   "extends": ["./node_modules/@minware/oxlint-config/.oxlintrc.json"],
   "ignorePatterns": ["lib"],
   "rules": {
-    "arrow-body-style": "off",
-    "radix": "off",
     // Was explicitly off in old config (eslint:recommended + @typescript-eslint/recommended base)
     "typescript/no-explicit-any": "off",
     "typescript/explicit-module-boundary-types": "off"
