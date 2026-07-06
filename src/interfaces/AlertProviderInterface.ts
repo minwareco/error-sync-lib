@@ -1,7 +1,7 @@
-import { ErrorGroup, Alert, AlertContent } from '../models';
+import { Alert, AlertContent, ErrorGroup } from '../models';
 
 export interface AlertProviderInterface {
-  findAlert(clientId: string): Promise<Alert|undefined>;
+  findAlert(clientId: string): Promise<Alert | undefined>;
 
   createAlert(alertContent: AlertContent): Promise<Alert>;
 

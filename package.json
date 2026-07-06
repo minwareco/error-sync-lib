@@ -6,8 +6,12 @@
     "build": "npm run build:esm && npm run build:cjs",
     "build:esm": "rm -rf ./lib/esm && tsc",
     "build:cjs": "rm -rf ./lib/cjs && tsc --module commonjs --outDir lib/cjs",
-    "lint": "oxlint --type-aware src",
-    "lint:oxlint": "oxlint --type-aware src",
+    "format": "dprint fmt",
+    "format:check": "dprint check",
+    "lint": "run-p -c --aggregate-output \"format:check\" \"lint:oxlint\"",
+    "lint:oxlint": "oxlint --type-aware",
+    "lint:fix": "run-s \"format\" \"lint:oxlint -- --fix --quiet\"",
+    "ci:lint": "run-p -c --aggregate-output \"format:check -- --incremental=false\" \"lint:oxlint\"",
     "lint:types": "tsc --noEmit",
     "test": "jest --passWithNoTests src",
     "dev": "npm run build:cjs && node lib/cjs/manualTest.js"
@@ -23,7 +27,6 @@
     "@atlaskit/editor-wikimarkup-transformer": "^11.19.0",
     "@types/jsurl": "^0.1.2",
     "aws-sdk": "^2.981.0",
-    "dprint": "^0.55.1",
     "jira.js": "^5.2.2",
     "jsurl": "^0.1.5",
     "newrelic-api-client": "^0.1.7",
@@ -31,10 +34,13 @@
     "typescript": "^6.0.3"
   },
   "devDependencies": {
+    "@minware/dprint-config": "^1.0.0",
     "@minware/oxlint-config": "^0.1.1-rc.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^18.19.129",
+    "dprint": "^0.55.1",
     "jest": "^29.7.0",
+    "npm-run-all2": "^8.0.4",
     "oxlint": "^1.72.0",
     "oxlint-tsgolint": "^0.23.0",
     "ts-jest": "^29.4.11"
