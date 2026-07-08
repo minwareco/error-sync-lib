@@ -1,39 +1,48 @@
 import crypto from 'crypto';
-import { Alert, AlertContent, CacheName, Error, ErrorGroup, ErrorPriority, Ticket, TicketContent } from './models';
+import {
+  Alert,
+  AlertContent,
+  CacheName,
+  Error,
+  ErrorGroup,
+  ErrorPriority,
+  Ticket,
+  TicketContent,
+} from './models';
 import {
   AlertProviderInterface,
   CacheProviderInterface,
   ErrorProviderInterface,
   PrioritizationProviderInterface,
-  TicketProviderInterface
+  TicketProviderInterface,
 } from './interfaces';
-import { ErrorCountPrioritizationProvider, JiraTicketProvider } from "./providers";
+import { ErrorCountPrioritizationProvider, JiraTicketProvider } from './providers';
 
 export type SynchronizerError = {
-  message: string,
-  errorGroup?: ErrorGroup,
-}
+  message: string;
+  errorGroup?: ErrorGroup;
+};
 
 export type SynchronizerResult = {
-  completedErrorGroups: ErrorGroup[],
-  errors: SynchronizerError[],
-  exitCode: number,
-}
+  completedErrorGroups: ErrorGroup[];
+  errors: SynchronizerError[];
+  exitCode: number;
+};
 
 export type SynchronizerErrorProviderConfig = {
-  name: string,
-  provider: ErrorProviderInterface,
-  prioritizationProvider?: PrioritizationProviderInterface,
-  lookbackHours?: number,
-  maxErrors?: number,
-}
+  name: string;
+  provider: ErrorProviderInterface;
+  prioritizationProvider?: PrioritizationProviderInterface;
+  lookbackHours?: number;
+  maxErrors?: number;
+};
 
 export type SynchronizerConfig = {
-  errors: SynchronizerErrorProviderConfig[],
-  ticketProvider: TicketProviderInterface,
-  alertProvider: AlertProviderInterface,
-  cacheProvider: CacheProviderInterface,
-}
+  errors: SynchronizerErrorProviderConfig[];
+  ticketProvider: TicketProviderInterface;
+  alertProvider: AlertProviderInterface;
+  cacheProvider: CacheProviderInterface;
+};
 
 export class Synchronizer {
   private config: SynchronizerConfig;
@@ -58,20 +67,25 @@ export class Synchronizer {
     const finalResult: SynchronizerResult = {
       completedErrorGroups: [],
       errors: [],
-      exitCode: 0
+      exitCode: 0,
     };
 
     // run all error provider synchronizations in parallel
     try {
-      const errorPromises = await this.config.errors.map((errorConfig) => this.runForErrorProvider(errorConfig, finalResult));
+      const errorPromises = await this.config.errors.map(errorConfig =>
+        this.runForErrorProvider(errorConfig, finalResult)
+      );
 
       // check for any promise rejections from our error provider synchronizations
       const providerResults = await Promise.allSettled(errorPromises);
       for (const [index, providerResult] of providerResults.entries()) {
         if (providerResult.status === 'rejected') {
           const providerName = this.config.errors[index].name;
-          console.error('An exception occurred while trying to synchronize errors for the ' +
-            `provider named "${providerName}":`, providerResult.reason);
+          console.error(
+            'An exception occurred while trying to synchronize errors for the '
+              + `provider named "${providerName}":`,
+            providerResult.reason,
+          );
           finalResult.exitCode = 1;
           finalResult.errors.push({
             message: providerResult.reason.message || providerResult.reason,
@@ -100,19 +114,26 @@ export class Synchronizer {
     }
 
     if (finalResult.errors.length > 0) {
-      console.error('Some errors were not synchronized to the ticketing and/or alerting system. Please see errors above.');
+      console
+        .error('Some errors were not synchronized to the ticketing and/or alerting system. Please see errors above.');
       finalResult.exitCode = finalResult.exitCode || 4;
     }
 
     return finalResult;
   }
 
-  private async runForErrorProvider(errorConfig: SynchronizerErrorProviderConfig, result: SynchronizerResult) {
-    const errors = await errorConfig.provider.getErrors(errorConfig.lookbackHours, errorConfig.maxErrors);
+  private async runForErrorProvider(
+    errorConfig: SynchronizerErrorProviderConfig,
+    result: SynchronizerResult,
+  ) {
+    const errors = await errorConfig.provider.getErrors(
+      errorConfig.lookbackHours,
+      errorConfig.maxErrors,
+    );
     const errorGroups: ErrorGroup[] = [];
 
     // build up the error groups from raw errors, which drive all downstream work
-    errors.forEach((error) => this.addToErrorGroups(error, errorGroups, errorConfig.name));
+    errors.forEach(error => this.addToErrorGroups(error, errorGroups, errorConfig.name));
 
     // for each error group, create / update a ticket and alert as needed. in most cases, no work
     // is done because the ticket + alert has already been created and does not need to be updated.
@@ -127,21 +148,32 @@ export class Synchronizer {
         });
 
         console.error('Failed to synchronize an error into the ticketing and/or alerting system.');
-        console.error(`The relevant error is named "${errorGroup.name}" from provider "${errorConfig.name}"`);
+        console
+          .error(`The relevant error is named "${errorGroup.name}" from provider "${errorConfig.name}"`);
         console.error('The exception which occurred is:', e);
       }
     }
   }
 
-  private async syncErrorGroup(errorGroup: ErrorGroup, errorConfig: SynchronizerErrorProviderConfig) {
+  private async syncErrorGroup(
+    errorGroup: ErrorGroup,
+    errorConfig: SynchronizerErrorProviderConfig,
+  ) {
     // determine the appropriate priority
-    const { priority, priorityReason } = await errorConfig.prioritizationProvider.determinePriority(errorGroup);
+    const { priority, priorityReason } = await errorConfig.prioritizationProvider
+      .determinePriority(errorGroup);
     errorGroup.priority = priority;
     errorGroup.priorityReason = priorityReason;
 
     // read any cached version of the ticket and alert
-    errorGroup.ticket = await this.config.cacheProvider.getObject(errorGroup.clientId, CacheName.Tickets);
-    errorGroup.alert = await this.config.cacheProvider.getObject(errorGroup.clientId, CacheName.Alerts);
+    errorGroup.ticket = await this.config.cacheProvider.getObject(
+      errorGroup.clientId,
+      CacheName.Tickets,
+    );
+    errorGroup.alert = await this.config.cacheProvider.getObject(
+      errorGroup.clientId,
+      CacheName.Alerts,
+    );
 
     // if our ticket cache does not know about the error, then we search in the source-of-truth
     // ticketing system. if it is not there either, then we will end up creating a new ticket.
@@ -171,11 +203,9 @@ export class Synchronizer {
       Object.assign(errorGroup.ticket, freshTicketContent);
       errorGroup.ticket = await this.config.ticketProvider.updateTicket(errorGroup.ticket);
     }
-    
-    const shouldIgnore = (
-      errorGroup.ticket.labels.includes('ignore') ||
-      errorGroup.ticket.labels.includes('wont fix')
-    );
+
+    const shouldIgnore = errorGroup.ticket.labels.includes('ignore')
+      || errorGroup.ticket.labels.includes('wont fix');
 
     // if the ticket is closed and meets certain conditions, then reopen it
     if (!shouldIgnore && this.doesTicketNeedReopening(errorGroup.ticket)) {
@@ -185,11 +215,14 @@ export class Synchronizer {
     } else {
       // eslint-disable-next-line no-lonely-if
       if (shouldIgnore) {
-        console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} has ignore/wont fix label - not reopening`);
+        console
+          .log(`[Synchronizer] Ticket ${errorGroup.ticket.id} has ignore/wont fix label - not reopening`);
       } else if (errorGroup.ticket.isOpen) {
-        console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} is already open - not reopening`);
+        console
+          .log(`[Synchronizer] Ticket ${errorGroup.ticket.id} is already open - not reopening`);
       } else {
-        console.log(`[Synchronizer] Ticket ${errorGroup.ticket.id} does not meet reopening criteria`);
+        console
+          .log(`[Synchronizer] Ticket ${errorGroup.ticket.id} does not meet reopening criteria`);
         console.log(`  - resolutionDate: ${errorGroup.ticket.resolutionDate}`);
         if (errorGroup.ticket.resolutionDate) {
           const resolutionDate = new Date(errorGroup.ticket.resolutionDate);
@@ -200,7 +233,12 @@ export class Synchronizer {
       }
     }
 
-    await this.config.cacheProvider.setObject(errorGroup.clientId, errorGroup.ticket, CacheName.Tickets, false);
+    await this.config.cacheProvider.setObject(
+      errorGroup.clientId,
+      errorGroup.ticket,
+      CacheName.Tickets,
+      false,
+    );
 
     // if our alert cache does not know about the error, then we search in the source-of-truth
     // alert system. if it is not there either, then we will end up creating a new alert.
@@ -234,7 +272,12 @@ export class Synchronizer {
       await this.config.alertProvider.updateAlert(errorGroup.alert);
     }
 
-    await this.config.cacheProvider.setObject(errorGroup.clientId, errorGroup.alert, CacheName.Alerts, false);
+    await this.config.cacheProvider.setObject(
+      errorGroup.clientId,
+      errorGroup.alert,
+      CacheName.Alerts,
+      false,
+    );
   }
 
   private createErrorGroup(error: Error, sourceName: string): ErrorGroup {
@@ -244,7 +287,10 @@ export class Synchronizer {
 
     // wipe out line numbers
     let normalizedName = error.name;
-    normalizedName = normalizedName.replace(/\.(js|jsx|ts|tsx|php|py|go|java|cpp|h|c|cs|ex|exs|rb)[:@]\d+/i, '.$1:XXX');
+    normalizedName = normalizedName.replace(
+      /\.(js|jsx|ts|tsx|php|py|go|java|cpp|h|c|cs|ex|exs|rb)[:@]\d+/i,
+      '.$1:XXX',
+    );
 
     // remove TypeError prefix from client errors that some browsers may emit
     normalizedName = normalizedName.replace(/(TypeError:\s*)/i, '');
@@ -282,8 +328,10 @@ export class Synchronizer {
       // if we have already seen this error, tack it onto the existing group as another instance
       if (newErrorGroup.name === existingErrorGroup.name) {
         existingErrorGroup.instances.push(error);
-        existingErrorGroup.mixpanelIds = Array.from(new Set([...existingErrorGroup.mixpanelIds, ...(error.mixpanelIds ?? [])]));
-        existingErrorGroup.userEmails = Array.from(new Set([...existingErrorGroup.userEmails, ...(error.userEmails ?? [])]));
+        existingErrorGroup.mixpanelIds = Array
+          .from(new Set([...existingErrorGroup.mixpanelIds, ...(error.mixpanelIds ?? [])]));
+        existingErrorGroup.userEmails = Array
+          .from(new Set([...existingErrorGroup.userEmails, ...(error.userEmails ?? [])]));
         return;
       }
     }
@@ -305,7 +353,10 @@ export class Synchronizer {
   }
 
   private doesTicketNeedUpdate(existingTicket: Ticket, freshTicketContent: TicketContent): boolean {
-    const sameTicketContent = JiraTicketProvider.sameTicketContent(existingTicket, freshTicketContent);
+    const sameTicketContent = JiraTicketProvider.sameTicketContent(
+      existingTicket,
+      freshTicketContent,
+    );
     console.log('sameTicketContent: ', sameTicketContent);
     return !sameTicketContent;
   }

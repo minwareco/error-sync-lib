@@ -21,32 +21,32 @@ export enum ErrorType {
 }
 
 export type Error = {
-  name: string,
-  type: ErrorType,
-  count: number,
-  countType: ErrorCountType,
-  mixpanelIds?: string[],
-  userEmails?: string[],
-  countPeriodHours: number,
-  debugUrl?: string,
-  debugMessage?: string,
-  ticketType?: string,
-  labels?: string[],
+  name: string;
+  type: ErrorType;
+  count: number;
+  countType: ErrorCountType;
+  mixpanelIds?: string[];
+  userEmails?: string[];
+  countPeriodHours: number;
+  debugUrl?: string;
+  debugMessage?: string;
+  ticketType?: string;
+  labels?: string[];
 };
 
 export type ErrorGroup = {
-  name: string,
-  sourceName: string,
-  type: ErrorType,
-  priority: string,
-  priorityReason: string,
-  clientId: string,
-  count: number,
-  countType: ErrorCountType,
-  mixpanelIds: string[],
-  countPeriodHours: number,
-  ticket: Ticket,
-  alert: Alert,
-  instances: Error[],
-  userEmails: string[],
+  name: string;
+  sourceName: string;
+  type: ErrorType;
+  priority: string;
+  priorityReason: string;
+  clientId: string;
+  count: number;
+  countType: ErrorCountType;
+  mixpanelIds: string[];
+  countPeriodHours: number;
+  ticket: Ticket;
+  alert: Alert;
+  instances: Error[];
+  userEmails: string[];
 };
