@@ -1,9 +1,12 @@
-import { NewRelicErrorProvider, NewRelicErrorProviderType, NewRelicErrorProviderConfig } from './NewRelicErrorProvider';
+import {
+  NewRelicErrorProvider,
+  NewRelicErrorProviderConfig,
+  NewRelicErrorProviderType,
+} from './NewRelicErrorProvider';
 
 export type NewRelicServerErrorProviderConfig = Omit<NewRelicErrorProviderConfig, 'type'> & {
   excludedeHosts?: [string]; // Keep the typo for backward compatibility
-}
-
+};
 
 export class NewRelicServerErrorProvider extends NewRelicErrorProvider {
   public constructor(config: NewRelicServerErrorProviderConfig) {

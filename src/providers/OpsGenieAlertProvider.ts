@@ -3,10 +3,10 @@ import { AlertProviderInterface } from '../interfaces';
 import opsGenie from 'opsgenie-sdk';
 
 export type OpsGenieAlertProviderConfig = {
-  host: string,
-  apiKey: string,
-  priorityMap?: Record<string, string>,
-}
+  host: string;
+  apiKey: string;
+  priorityMap?: Record<string, string>;
+};
 
 export class OpsGenieAlertProvider implements AlertProviderInterface {
   private config: OpsGenieAlertProviderConfig;
@@ -30,7 +30,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
     }
   }
 
-  public async findAlert(clientId: string): Promise<Alert|undefined> {
+  public async findAlert(clientId: string): Promise<Alert | undefined> {
     const opsgenieAlert: any = await new Promise((resolve, reject) => {
       opsGenie.alertV2.get({
         identifier: clientId,
@@ -42,26 +42,24 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
           return resolve(undefined);
         } else if (error instanceof Error) {
           return reject(error);
-        } else {
-          return reject(new Error(error.message || error));
         }
+        return reject(new Error(error.message || error));
       });
     });
 
     if (!opsgenieAlert) {
       return undefined;
-    } else {
-      return {
-        id: clientId,
-        clientId,
-        summary: opsgenieAlert.message,
-        description: opsgenieAlert.description,
-        priority: opsgenieAlert.priority,
-        labels: opsgenieAlert.tags ?? [],
-        ticketUrl: opsgenieAlert.details['Ticket Link'],
-        status: opsgenieAlert.status,
-      }
     }
+    return {
+      id: clientId,
+      clientId,
+      summary: opsgenieAlert.message,
+      description: opsgenieAlert.description,
+      priority: opsgenieAlert.priority,
+      labels: opsgenieAlert.tags ?? [],
+      ticketUrl: opsgenieAlert.details['Ticket Link'],
+      status: opsgenieAlert.status,
+    };
   }
 
   public async createAlert(alertContent: AlertContent): Promise<Alert> {
@@ -72,7 +70,7 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
         message: alertContent.summary,
         description: alertContent.description,
         alias: alertContent.clientId,
-        priority: priority,
+        priority,
         tags: alertContent.labels,
         details: {
           'Ticket Link': alertContent.ticketUrl,
@@ -83,14 +81,14 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
     });
 
     return Object.assign(alertContent, {
-      id: alertContent.clientId
-    })
+      id: alertContent.clientId,
+    });
   }
 
   public async updateAlert(alert: Alert): Promise<Alert> {
     // an OpsGenie alert cannot be updated, so we just recreate it
     await this.closeAlert(alert);
-    return await this.createAlert(alert);
+    return this.createAlert(alert);
   }
 
   public async closeAlert(alert: Alert): Promise<void> {
@@ -107,7 +105,10 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
   }
 
   public async generateAlertContent(errorGroup: ErrorGroup): Promise<AlertContent> {
-    const summary = `[${errorGroup.type}] [${errorGroup.sourceName}] ${errorGroup.name}`.substr(0, 130).trim();
+    const summary = `[${errorGroup.type}] [${errorGroup.sourceName}] ${errorGroup.name}`.substr(
+      0,
+      130,
+    ).trim();
 
     return {
       clientId: errorGroup.clientId,
@@ -117,6 +118,6 @@ export class OpsGenieAlertProvider implements AlertProviderInterface {
       labels: errorGroup.instances[0]?.labels ?? [],
       ticketUrl: errorGroup.ticket?.url,
       status: 'open',
-    }
+    };
   }
 }

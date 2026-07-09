@@ -1,0 +1,9 @@
+{
+  "extends": [
+    "./node_modules/@minware/dprint-config/dprint.json"
+  ],
+  "excludes": [
+    "**/node_modules",
+    "lib/**"
+  ]
+}

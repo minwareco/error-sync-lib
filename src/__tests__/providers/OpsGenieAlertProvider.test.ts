@@ -1,5 +1,8 @@
-import { OpsGenieAlertProvider, OpsGenieAlertProviderConfig } from '../../providers/OpsGenieAlertProvider';
-import { ErrorGroup, ErrorPriority, ErrorType, ErrorCountType } from '../../models';
+import {
+  OpsGenieAlertProvider,
+  OpsGenieAlertProviderConfig,
+} from '../../providers/OpsGenieAlertProvider';
+import { ErrorCountType, ErrorGroup, ErrorPriority, ErrorType } from '../../models';
 import opsGenie from 'opsgenie-sdk';
 
 // Mock the opsgenie-sdk
@@ -111,16 +114,18 @@ describe('OpsGenieAlertProvider', () => {
 
   describe('findAlert', () => {
     it('should map OpsGenie tags back into labels', async () => {
-      mockGet.mockImplementation((_params: any, cb: any) => cb(null, {
-        data: {
-          message: 'summary',
-          description: 'desc',
-          priority: 'P1',
-          tags: ['synthetic', 'monitoring'],
-          details: { 'Ticket Link': 'https://example.atlassian.net/browse/MW-1' },
-          status: 'open',
-        },
-      }));
+      mockGet.mockImplementation((_params: any, cb: any) =>
+        cb(null, {
+          data: {
+            message: 'summary',
+            description: 'desc',
+            priority: 'P1',
+            tags: ['synthetic', 'monitoring'],
+            details: { 'Ticket Link': 'https://example.atlassian.net/browse/MW-1' },
+            status: 'open',
+          },
+        })
+      );
 
       const alert = await provider.findAlert('abc123');
 
@@ -128,15 +133,17 @@ describe('OpsGenieAlertProvider', () => {
     });
 
     it('should default to an empty label array when the alert has no tags', async () => {
-      mockGet.mockImplementation((_params: any, cb: any) => cb(null, {
-        data: {
-          message: 'summary',
-          description: 'desc',
-          priority: 'P1',
-          details: { 'Ticket Link': undefined },
-          status: 'open',
-        },
-      }));
+      mockGet.mockImplementation((_params: any, cb: any) =>
+        cb(null, {
+          data: {
+            message: 'summary',
+            description: 'desc',
+            priority: 'P1',
+            details: { 'Ticket Link': undefined },
+            status: 'open',
+          },
+        })
+      );
 
       const alert = await provider.findAlert('abc123');
 

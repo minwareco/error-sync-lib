@@ -3,9 +3,9 @@ import { CacheProviderInterface } from '../interfaces';
 import AWS from 'aws-sdk';
 
 export type S3CacheProviderConfig = {
-  region?: string,
-  bucket: string,
-  keyPrefix: string,
+  region?: string;
+  bucket: string;
+  keyPrefix: string;
 };
 
 export class S3CacheProvider implements CacheProviderInterface {
@@ -25,12 +25,17 @@ export class S3CacheProvider implements CacheProviderInterface {
     return cache[id];
   }
 
-  public async setObject<T>(id: string, value: T, cacheName: CacheName, saveCache = false): Promise<void> {
+  public async setObject<T>(
+    id: string,
+    value: T,
+    cacheName: CacheName,
+    saveCache = false,
+  ): Promise<void> {
     const cache = await this.getCache(cacheName);
     cache[id] = value;
 
     if (saveCache) {
-      return await this.setCache(cacheName, cache);
+      return this.setCache(cacheName, cache);
     }
   }
 
@@ -79,7 +84,7 @@ export class S3CacheProvider implements CacheProviderInterface {
     };
 
     await new Promise<void>((resolve, reject) => {
-      s3.putObject(params, (err) => err ? reject(err) : resolve());
+      s3.putObject(params, err => err ? reject(err) : resolve());
     });
 
     this.caches[name] = data;

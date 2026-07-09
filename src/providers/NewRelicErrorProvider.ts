@@ -4,25 +4,25 @@ import newrelicApi from 'newrelic-api-client';
 
 export enum NewRelicErrorProviderType {
   SERVER = 'server',
-  BROWSER = 'browser'
+  BROWSER = 'browser',
 }
 
 export type NewRelicErrorProviderConfig = {
-  accountId: string,
-  appName: string,
-  appConfigId: string,
-  type: NewRelicErrorProviderType,
-  includeHosts?: [string],
-  excludeHosts?: [string],
-  excludeUserAgents?: [string],
-  userIdField?: string
-}
+  accountId: string;
+  appName: string;
+  appConfigId: string;
+  type: NewRelicErrorProviderType;
+  includeHosts?: [string];
+  excludeHosts?: [string];
+  excludeUserAgents?: [string];
+  userIdField?: string;
+};
 
 type FieldConfiguration = {
-  name: string,
-  nrql: string,
-  resultProperty: string,
-}
+  name: string;
+  nrql: string;
+  resultProperty: string;
+};
 
 const fieldConfiguration: Record<string, FieldConfiguration> = {
   count: {
@@ -55,15 +55,15 @@ const fieldConfiguration: Record<string, FieldConfiguration> = {
     nrql: 'uniques(entityGuid)',
     resultProperty: 'members',
   },
-}
+};
 
 type TableConfiguration = {
-  tableName: string,
-  facetField: string,
-  errorType: ErrorType,
-  includeUserAgentFilter: boolean,
-  includeMixpanelIds: boolean,
-}
+  tableName: string;
+  facetField: string;
+  errorType: ErrorType;
+  includeUserAgentFilter: boolean;
+  includeMixpanelIds: boolean;
+};
 
 const tableConfiguration: Record<NewRelicErrorProviderType, TableConfiguration> = {
   [NewRelicErrorProviderType.SERVER]: {
@@ -80,7 +80,7 @@ const tableConfiguration: Record<NewRelicErrorProviderType, TableConfiguration> 
     includeUserAgentFilter: false,
     includeMixpanelIds: true,
   },
-}
+};
 
 export class NewRelicErrorProvider implements ErrorProviderInterface {
   private config: NewRelicErrorProviderConfig;
@@ -96,13 +96,12 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
       const filters = [{
         key: 'error.message',
         value: errorName,
-        like: false
+        like: false,
       }];
       const encodedFilters = encodeURIComponent(JSON.stringify(filters));
       return `https://rpm.newrelic.com/accounts/${this.config.accountId}/applications/${appId}/filterable_errors#/table?top_facet=transactionUiName&primary_facet=error.class&barchart=barchart&filters=${encodedFilters}&duration=${hoursInMs}`;
-    } else {
-      return `https://one.newrelic.com/nr1-core/errors-inbox/entity-inbox/${entityGuid}?duration=${hoursInMs}`;
     }
+    return `https://one.newrelic.com/nr1-core/errors-inbox/entity-inbox/${entityGuid}?duration=${hoursInMs}`;
   }
 
   public async getErrors(hoursBack = 24, limit = 1000): Promise<Error[]> {
@@ -149,13 +148,14 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
           return resolve([]);
         } else if (response.body.error) {
           return reject(response.body.error);
+          // eslint-disable-next-line eqeqeq
         } else if (response.statusCode != 200) {
           return reject(response.body);
         }
 
         const errors = [];
 
-        body.facets.forEach((newRelicError) => {
+        body.facets.forEach(newRelicError => {
           // Map the query results to named properties
           newRelicError.results.forEach((row, index) => {
             const field = fields[index];
@@ -164,15 +164,23 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
 
           // Set standard error properties
           newRelicError.type = tableConfig.errorType;
-          newRelicError.count = (newRelicError.uniqueCount > 0 ? newRelicError.uniqueCount : newRelicError.count);
-          newRelicError.countType = newRelicError.uniqueCount > 0 ? ErrorCountType.USERS : ErrorCountType.TRX;
+          newRelicError.count = newRelicError.uniqueCount > 0
+            ? newRelicError.uniqueCount
+            : newRelicError.count;
+          newRelicError.countType = newRelicError.uniqueCount > 0
+            ? ErrorCountType.USERS
+            : ErrorCountType.TRX;
           newRelicError.countPeriodHours = hoursBack;
           // This might not be set for all error so fallback to an empty array
           newRelicError.mixpanelIds ??= [];
           newRelicError.userEmails ??= [];
           // Generate debug URL
-          const appId = newRelicError.appId;
-          newRelicError.debugUrl = this.buildDebugUrl(appId, newRelicError.name, newRelicError.entityGuid[0]);
+          const { appId } = newRelicError;
+          newRelicError.debugUrl = this.buildDebugUrl(
+            appId,
+            newRelicError.name,
+            newRelicError.entityGuid[0],
+          );
 
           errors.push(newRelicError);
         });
@@ -181,4 +189,4 @@ export class NewRelicErrorProvider implements ErrorProviderInterface {
       });
     });
   }
-} 
+}
