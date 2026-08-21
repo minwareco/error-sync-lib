@@ -1,5 +1,5 @@
-import { Alert, AlertContent, ErrorGroup, ErrorPriority } from '../models';
-import { AlertProviderInterface } from '../interfaces';
+import { type Alert, type AlertContent, type ErrorGroup, ErrorPriority } from '../models';
+import { type AlertProviderInterface } from '../interfaces';
 import opsGenie from 'opsgenie-sdk';
 
 export type OpsGenieAlertProviderConfig = {

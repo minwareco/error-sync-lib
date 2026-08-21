@@ -1,6 +1,6 @@
 import {
   NewRelicBrowserErrorProvider,
-  NewRelicBrowserErrorProviderConfig,
+  type NewRelicBrowserErrorProviderConfig,
 } from '../../providers/NewRelicBrowserErrorProvider';
 import { ErrorCountType, ErrorType } from '../../models';
 import newrelicApi from 'newrelic-api-client';

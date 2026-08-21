@@ -1,4 +1,4 @@
-import { CacheName } from '../models';
+import { type CacheName } from '../models';
 
 export interface CacheProviderInterface {
   getObject<T>(id: string, cacheName: CacheName): Promise<T>;

@@ -1,8 +1,8 @@
 import {
   OpsGenieAlertProvider,
-  OpsGenieAlertProviderConfig,
+  type OpsGenieAlertProviderConfig,
 } from '../../providers/OpsGenieAlertProvider';
-import { ErrorCountType, ErrorGroup, ErrorPriority, ErrorType } from '../../models';
+import { ErrorCountType, type ErrorGroup, ErrorPriority, ErrorType } from '../../models';
 import opsGenie from 'opsgenie-sdk';
 
 // Mock the opsgenie-sdk

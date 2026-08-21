@@ -1,20 +1,24 @@
-import { Synchronizer, SynchronizerConfig, SynchronizerErrorProviderConfig } from '../Synchronizer';
 import {
-  Alert,
-  AlertContent,
-  CacheName,
-  Error,
+  Synchronizer,
+  type SynchronizerConfig,
+  SynchronizerErrorProviderConfig,
+} from '../Synchronizer';
+import {
+  type Alert,
+  type AlertContent,
+  type CacheName,
+  type Error,
   ErrorCountType,
-  ErrorGroup,
+  type ErrorGroup,
   ErrorType,
-  Ticket,
-  TicketContent,
+  type Ticket,
+  type TicketContent,
 } from '../models';
 import {
-  AlertProviderInterface,
-  CacheProviderInterface,
-  ErrorProviderInterface,
-  TicketProviderInterface,
+  type AlertProviderInterface,
+  type CacheProviderInterface,
+  type ErrorProviderInterface,
+  type TicketProviderInterface,
 } from '../interfaces';
 
 // Mock implementations for testing

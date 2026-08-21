@@ -3,7 +3,7 @@ import { ErrorProviderInterface } from '../interfaces';
 import newrelicApi from 'newrelic-api-client';
 import {
   NewRelicErrorProvider,
-  NewRelicErrorProviderConfig,
+  type NewRelicErrorProviderConfig,
   NewRelicErrorProviderType,
 } from './NewRelicErrorProvider';
 

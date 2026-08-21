@@ -1,5 +1,5 @@
-import { Error, ErrorCountType, ErrorType } from '../models';
-import { ErrorProviderInterface } from '../interfaces';
+import { type Error, ErrorCountType, ErrorType } from '../models';
+import { type ErrorProviderInterface } from '../interfaces';
 import newrelicApi from 'newrelic-api-client';
 
 export enum NewRelicErrorProviderType {
