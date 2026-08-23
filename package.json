@@ -10,7 +10,7 @@
     "format:check": "dprint check",
     "lint": "run-p -c --aggregate-output \"format:check\" \"lint:oxlint\"",
     "lint:oxlint": "oxlint --type-aware",
-    "lint:fix": "run-s \"format\" \"lint:oxlint -- --fix --quiet\"",
+    "lint:fix": "run-s -c \"lint:oxlint -- --fix --quiet\" \"format\"",
     "ci:lint": "run-p -c --aggregate-output \"format:check -- --incremental=false\" \"lint:oxlint -- --quiet\"",
     "lint:types": "tsc --noEmit",
     "test": "jest --passWithNoTests src",
