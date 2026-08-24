@@ -1,4 +1,4 @@
-import { ErrorGroup, ErrorPriority } from '../models';
+import { type ErrorGroup, type ErrorPriority } from '../models';
 
 export type ErrorPrioritizationResult = {
   priority: ErrorPriority;

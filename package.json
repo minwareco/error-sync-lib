@@ -1,6 +1,6 @@
 {
   "name": "error-sync-lib",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "private": "true",
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs",
@@ -10,7 +10,7 @@
     "format:check": "dprint check",
     "lint": "run-p -c --aggregate-output \"format:check\" \"lint:oxlint\"",
     "lint:oxlint": "oxlint --type-aware",
-    "lint:fix": "run-s \"format\" \"lint:oxlint -- --fix --quiet\"",
+    "lint:fix": "run-s -c \"lint:oxlint -- --fix --quiet\" \"format\"",
     "ci:lint": "run-p -c --aggregate-output \"format:check -- --incremental=false\" \"lint:oxlint -- --quiet\"",
     "lint:types": "tsc --noEmit",
     "test": "jest --passWithNoTests src",
@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@minware/dprint-config": "^1.0.0",
-    "@minware/oxlint-config": "^0.1.1",
+    "@minware/oxlint-config": "^0.2.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^18.19.129",
     "dprint": "^0.55.2",

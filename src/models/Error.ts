@@ -1,4 +1,4 @@
-import { Alert, Ticket } from '.';
+import { type Alert, type Ticket } from '.';
 
 export enum ErrorPriority {
   P1 = 'P1',

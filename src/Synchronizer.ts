@@ -1,20 +1,20 @@
 import crypto from 'crypto';
 import {
-  Alert,
-  AlertContent,
+  type Alert,
+  type AlertContent,
   CacheName,
   Error,
-  ErrorGroup,
+  type ErrorGroup,
   ErrorPriority,
-  Ticket,
-  TicketContent,
+  type Ticket,
+  type TicketContent,
 } from './models';
 import {
-  AlertProviderInterface,
-  CacheProviderInterface,
-  ErrorProviderInterface,
-  PrioritizationProviderInterface,
-  TicketProviderInterface,
+  type AlertProviderInterface,
+  type CacheProviderInterface,
+  type ErrorProviderInterface,
+  type PrioritizationProviderInterface,
+  type TicketProviderInterface,
 } from './interfaces';
 import { ErrorCountPrioritizationProvider, JiraTicketProvider } from './providers';
 

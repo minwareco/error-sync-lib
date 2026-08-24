@@ -1,6 +1,6 @@
 import {
   NewRelicErrorProvider,
-  NewRelicErrorProviderConfig,
+  type NewRelicErrorProviderConfig,
   NewRelicErrorProviderType,
 } from './NewRelicErrorProvider';
 

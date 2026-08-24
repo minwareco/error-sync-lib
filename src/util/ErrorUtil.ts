@@ -1,4 +1,4 @@
-import { ErrorGroup } from '../models';
+import { type ErrorGroup } from '../models';
 
 export const getReadableErrorFrequency = (error: ErrorGroup) => {
   const countPeriod = getReadableErrorCountPeriod(error.countPeriodHours);

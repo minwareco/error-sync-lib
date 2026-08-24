@@ -1,5 +1,5 @@
-import { TicketProviderInterface } from '../interfaces';
-import { ErrorGroup, ErrorPriority, Ticket, TicketContent } from '../models';
+import { type TicketProviderInterface } from '../interfaces';
+import { type ErrorGroup, ErrorPriority, type Ticket, type TicketContent } from '../models';
 import JSURL from 'jsurl';
 import { Version3Client } from 'jira.js';
 import { URLSearchParams } from 'url';

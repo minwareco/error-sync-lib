@@ -1,6 +1,6 @@
 import {
   NewRelicServerErrorProvider,
-  NewRelicServerErrorProviderConfig,
+  type NewRelicServerErrorProviderConfig,
 } from '../../providers/NewRelicServerErrorProvider';
 import { ErrorCountType, ErrorType } from '../../models';
 import newrelicApi from 'newrelic-api-client';

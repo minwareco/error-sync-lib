@@ -1,5 +1,5 @@
 import { CacheName } from '../models';
-import { CacheProviderInterface } from '../interfaces';
+import { type CacheProviderInterface } from '../interfaces';
 import AWS from 'aws-sdk';
 
 export type S3CacheProviderConfig = {
