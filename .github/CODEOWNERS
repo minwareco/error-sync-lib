@@ -1,12 +1,12 @@
 # Dependabot reviewers (migrated from .github/dependabot.yml)
-/action.yaml @CTaylor1118 @KBorders01 @aaboyd
-/action.yml @CTaylor1118 @KBorders01 @aaboyd
-/npm-shrinkwrap.json @CTaylor1118 @KBorders01 @aaboyd
-/package-lock.json @CTaylor1118 @KBorders01 @aaboyd
-/package.json @CTaylor1118 @KBorders01 @aaboyd
-/pnpm-lock.yaml @CTaylor1118 @KBorders01 @aaboyd
-/yarn.lock @CTaylor1118 @KBorders01 @aaboyd
-/.github/workflows/*.yaml @CTaylor1118 @KBorders01 @aaboyd
-/.github/workflows/*.yml @CTaylor1118 @KBorders01 @aaboyd
-/**/.github/workflows/*.yaml @CTaylor1118 @KBorders01 @aaboyd
-/**/.github/workflows/*.yml @CTaylor1118 @KBorders01 @aaboyd
+/action.yaml @CTaylor1118
+/action.yml @CTaylor1118
+/npm-shrinkwrap.json @CTaylor1118
+/package-lock.json @CTaylor1118
+/package.json @CTaylor1118
+/pnpm-lock.yaml @CTaylor1118
+/yarn.lock @CTaylor1118
+/.github/workflows/*.yaml @CTaylor1118
+/.github/workflows/*.yml @CTaylor1118
+/**/.github/workflows/*.yaml @CTaylor1118
+/**/.github/workflows/*.yml @CTaylor1118
