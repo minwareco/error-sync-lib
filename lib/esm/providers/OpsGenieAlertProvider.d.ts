@@ -1,5 +1,5 @@
-import { Alert, AlertContent, ErrorGroup } from '../models';
-import { AlertProviderInterface } from '../interfaces';
+import { type Alert, type AlertContent, type ErrorGroup } from '../models';
+import { type AlertProviderInterface } from '../interfaces';
 export type OpsGenieAlertProviderConfig = {
     host: string;
     apiKey: string;

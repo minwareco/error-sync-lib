@@ -1,4 +1,4 @@
-import { NewRelicErrorProvider, NewRelicErrorProviderConfig } from './NewRelicErrorProvider';
+import { NewRelicErrorProvider, type NewRelicErrorProviderConfig } from './NewRelicErrorProvider';
 export type NewRelicBrowserErrorProviderConfig = Omit<NewRelicErrorProviderConfig, 'type'> & {
     excludedeHosts?: [string];
 };

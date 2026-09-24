@@ -1,5 +1,5 @@
-import { ErrorGroup } from './models';
-import { AlertProviderInterface, CacheProviderInterface, ErrorProviderInterface, PrioritizationProviderInterface, TicketProviderInterface } from './interfaces';
+import { type ErrorGroup } from './models';
+import { type AlertProviderInterface, type CacheProviderInterface, type ErrorProviderInterface, type PrioritizationProviderInterface, type TicketProviderInterface } from './interfaces';
 export type SynchronizerError = {
     message: string;
     errorGroup?: ErrorGroup;

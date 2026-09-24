@@ -1,5 +1,5 @@
-import { Error } from '../models';
-import { ErrorProviderInterface } from '../interfaces';
+import { type Error } from '../models';
+import { type ErrorProviderInterface } from '../interfaces';
 export declare enum NewRelicErrorProviderType {
     SERVER = "server",
     BROWSER = "browser"

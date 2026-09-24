@@ -1,4 +1,4 @@
-import { ErrorGroup, Ticket, TicketContent } from '../models';
+import { type ErrorGroup, type Ticket, type TicketContent } from '../models';
 export interface TicketProviderInterface {
     findTicket(clientId: string): Promise<Ticket | undefined>;
     createTicket(ticketContent: TicketContent): Promise<Ticket>;
