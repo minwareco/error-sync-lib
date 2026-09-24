@@ -1,5 +1,5 @@
-import { TicketProviderInterface } from '../interfaces';
-import { ErrorGroup, Ticket, TicketContent } from '../models';
+import { type TicketProviderInterface } from '../interfaces';
+import { type ErrorGroup, type Ticket, type TicketContent } from '../models';
 export type JiraBasicAuthConfig = {
     username: string;
     apiKey: string;

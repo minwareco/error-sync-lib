@@ -1,5 +1,5 @@
 import { CacheName } from '../models';
-import { CacheProviderInterface } from '../interfaces';
+import { type CacheProviderInterface } from '../interfaces';
 export type S3CacheProviderConfig = {
     region?: string;
     bucket: string;

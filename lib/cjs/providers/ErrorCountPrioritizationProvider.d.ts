@@ -1,5 +1,5 @@
-import { ErrorGroup, ErrorPriority } from '../models';
-import { ErrorPrioritizationResult, PrioritizationProviderInterface } from '../interfaces';
+import { type ErrorGroup, ErrorPriority } from '../models';
+import { type ErrorPrioritizationResult, type PrioritizationProviderInterface } from '../interfaces';
 export type ErrorCountPrioritizationProviderThreshold = {
     threshold: number;
     priority: ErrorPriority;
