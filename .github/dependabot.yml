@@ -21,6 +21,9 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
     reviewers:
       - CTaylor1118
     assignees:
@@ -35,6 +38,9 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
     reviewers:
       - CTaylor1118
     assignees:
